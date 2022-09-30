@@ -1,0 +1,3 @@
+[submodule "TinyTrade.Indicators"]
+	path = TinyTrade.Indicators
+	url = https://github.com/TinyTrade/TinyTrade.Indicators.git
