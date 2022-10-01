@@ -19,13 +19,18 @@ internal class CommandLineService : IHostedService
         this.services = services;
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
-        logger.LogTrace("Running in {env}\n", Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT"));
-        return cli.RunAsync();
+        _ = Task.Run(() => cli.RunAsync(), cancellationToken);
+        await Task.CompletedTask;
     }
 
-    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        ConsoleExtensions.ClearConsoleLine();
+        var spinner = ConsoleSpinner.Factory().Info("See ya ").Frames(6, ":)", ":|", ":(", ":(", ":(", ":(").Completed("").Build();
+        await spinner.Await(Task.Delay(750, cancellationToken));
+    }
 
     private void RegisterCommands()
     {
@@ -37,11 +42,15 @@ internal class CommandLineService : IHostedService
 
         cli.Register(Command.Factory("backtest")
             .Description("run a simulation on historical market data")
-            .ArgumentsHandler(ArgumentsHandler.Factory().Positional("strategy file").Positional("pair symbol").Flag("/d", "download data if not present"))
-            .Add(handler =>
+            .ArgumentsHandler(ArgumentsHandler.Factory().Positional("strategy file").Positional("interval pattern").Positional("pair symbol"))
+            .AddAsync(async handler =>
             {
                 logger.LogDebug("Simulating backtesting");
                 var service = services.GetRequiredService<BacktestService>();
+                var intervalPattern = handler.GetPositional(1);
+                var pair = handler.GetPositional(2);
+                var strategyFile = handler.GetPositional(0);
+                await service.RunBacktest(pair, intervalPattern, strategyFile);
             }));
 
         cli.Register(Command.Factory("run")

@@ -1,8 +1,8 @@
-﻿using TinyTrade.Strategies;
+﻿using TinyTrade.Core.Strategy;
 
 namespace TinyTrade.Services;
 
 internal interface IStrategyResolver
 {
-    bool ResolveStrategy(string strategyName, out IStrategy? strategy);
+    bool TryResolveStrategy(string strategyName, StrategyConstructorParameters parameters, out IStrategy strategy);
 }

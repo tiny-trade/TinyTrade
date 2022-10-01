@@ -1,6 +1,6 @@
-﻿namespace TinyTrade.Services.DataDownload;
+﻿namespace TinyTrade.Core;
 
-internal class YearMonthInterval
+internal class TimeInterval
 {
     private int fromYear;
     private int toYear;
@@ -17,12 +17,14 @@ internal class YearMonthInterval
 
     public int MonthsInterval => (toYear - fromYear) * 12 + (toMonth - fromMonth);
 
-    public YearMonthInterval(string pattern)
+    public TimeInterval(string pattern)
     {
         Parse(pattern);
     }
 
-    public IEnumerable<string> Periods()
+    public static implicit operator TimeInterval(string pattern) => new TimeInterval(pattern);
+
+    public IEnumerable<string> GetPeriods()
     {
         var periods = new List<string>();
         var year = fromYear;
@@ -35,20 +37,22 @@ internal class YearMonthInterval
                 periods.Add(year.ToString("0000") + "-" + month.ToString("00"));
                 month++;
             }
-            month = 0;
+            month = 1;
             year++;
         }
         return periods;
     }
 
+    public override string? ToString() => fromYear.ToString("0000") + "-" + fromMonth.ToString("00") + "|" + toYear.ToString("0000") + "-" + toMonth.ToString("00");
+
     private void Parse(string pattern)
     {
-        Now();
+        EmptyInterval();
         var pieces = pattern.Split("|");
         var from = pieces[0].Split("-");
         if (from.Length < 2 || !int.TryParse(from[0], out fromYear) || !int.TryParse(from[1], out fromMonth))
         {
-            Now();
+            EmptyInterval();
             return;
         }
         if (pieces.Length < 2) return;
@@ -56,19 +60,24 @@ internal class YearMonthInterval
         var to = pieces[1].Split("-");
         if (to.Length < 2 || !int.TryParse(to[0], out toYear) || !int.TryParse(to[1], out toMonth))
         {
-            Now();
+            EmptyInterval();
+            return;
+        }
+        if (fromYear > toYear)
+        {
+            EmptyInterval();
             return;
         }
     }
 
-    private void Now()
+    private void EmptyInterval()
     {
         var now = DateTime.Now;
         fromYear = now.Year;
         toYear = now.Year;
         fromMonth = now.Month;
         toMonth = now.Month - 1;
-        if (toMonth < 0)
+        if (toMonth < 1)
         {
             toYear--;
             toMonth = 12;

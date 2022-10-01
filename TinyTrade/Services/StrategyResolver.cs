@@ -1,35 +1,28 @@
 ﻿using System.Reflection;
-using TinyTrade.Strategies;
+using TinyTrade.Core.Strategy;
 
 namespace TinyTrade.Services;
 
 internal class StrategyResolver : IStrategyResolver
 {
-    private readonly string namespaceName;
+    private const string Namespace = "TinyTrade.Strategies.";
 
     public StrategyResolver()
     {
-        namespaceName = typeof(IStrategy).Namespace ?? string.Empty;
-        if (!string.IsNullOrEmpty(namespaceName))
-        {
-            namespaceName += ".";
-        }
     }
 
-    public bool ResolveStrategy(string strategyName, out IStrategy? strategy)
+    public bool TryResolveStrategy(string strategyName, StrategyConstructorParameters parameters, out IStrategy strategy)
     {
-        strategy = null;
+        strategy = null!;
         var assembly = Assembly.GetExecutingAssembly();
         if (assembly is null)
         {
             return false;
         }
-        var assemblyName = assembly.GetName().FullName;
-        var handle = Activator.CreateInstance(assemblyName, namespaceName + strategyName);
-        if (handle is null) return false;
-        var obj = handle.Unwrap();
-        if (obj is not IStrategy) return false;
-        strategy = obj as IStrategy;
+        var strategyType = Type.GetType(Namespace + strategyName);
+        if (strategyType is null) return false;
+        if (Activator.CreateInstance(strategyType, parameters) is not IStrategy handle) return false;
+        strategy = handle;
         return true;
     }
 }

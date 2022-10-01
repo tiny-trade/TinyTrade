@@ -4,11 +4,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TinyTrade.Logging;
 using TinyTrade.Services;
-using TinyTrade.Services.DataDownload;
+using TinyTrade.Services.Data;
 using TinyTrade.Services.Hosted;
-
-Console.Title = "TinyTrade";
-Console.WriteLine("==========  TinyTrade ==========\n");
 
 var cli = CommandLine.Factory()
         .OnUnrecognized((logger, cmd) => logger.LogError("{cmd} not recognized", cmd))
@@ -17,6 +14,8 @@ var cli = CommandLine.Factory()
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices(services =>
     {
+        services.Configure<ConsoleLifetimeOptions>(options => options.SuppressStatusMessages = true);
+
         services.AddHostedService<CommandLineService>();
 
         services.AddSingleton(provider => cli);
@@ -32,8 +31,7 @@ var host = Host.CreateDefaultBuilder(args)
         builder.AddProvider(new CliLoggerProvider(cli));
     })
     .Build();
-
-var b = new BinanceDataDownloadService(new CliLoggerProvider(cli));
-await b.DownloadData("BNBUSDT", "2022-02|2022-07", "user_data/data");
-
+ConsoleExtensions.ClearConsoleLine();
+Console.Title = "TinyTrade";
+Console.WriteLine("==========  TinyTrade ==========\n");
 await host.RunAsync();
