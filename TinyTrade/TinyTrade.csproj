@@ -8,7 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="HandierCli" Version="1.0.2" />
+    <PackageReference Include="HandierCli" Version="1.1.0" />
+    <PackageReference Include="Kucoin.Net" Version="4.0.17" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
   </ItemGroup>
 
