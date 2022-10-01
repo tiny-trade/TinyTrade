@@ -6,7 +6,7 @@ public class Ema
     private int smoothing;
     private List<float> firstValues;
     private float previousValue;
-    private int lenght;
+    private int length;
 
     public Ema(int period = 20, int smoothing = 2)
     {
@@ -14,15 +14,15 @@ public class Ema
         this.period = period;
         this.smoothing = smoothing;
         previousValue = 0;
-        lenght = 0;
+        length = 0;
     }
 
     public float? ComputeNext(float close)
     {
-        if (lenght < period)
+        if (length < period)
         {
             firstValues.Add(close);
-            lenght++;
+            length++;
             previousValue = firstValues.Average();
             return null;
         }
@@ -36,7 +36,7 @@ public class Ema
 
     public void Reset()
     {
-        lenght = 0;
+        length = 0;
         previousValue = 0;
         firstValues = new List<float>();
     }
