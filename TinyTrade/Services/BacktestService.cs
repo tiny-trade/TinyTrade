@@ -104,11 +104,15 @@ internal class BacktestService
                         moduleO = o;
                         moduleH = h;
                         moduleL = l;
+                        moduleV = v;
+                    }
+                    else
+                    {
+                        moduleV += v;
                     }
                     module++;
                     moduleL = moduleL > l ? l : moduleL;
                     moduleH = moduleH < h ? h : moduleH;
-
                     if (module != 0 && module % granularity == 0)
                     {
                         var frame = new DataFrame(moduleOt, moduleO, moduleH, moduleL, c, moduleV, ct, true);
