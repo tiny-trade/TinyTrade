@@ -2,4 +2,7 @@
 
 internal class SnapService
 {
+    public void Snapshot()
+    {
+    }
 }

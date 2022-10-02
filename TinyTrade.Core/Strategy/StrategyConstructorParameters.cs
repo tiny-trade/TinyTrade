@@ -3,7 +3,7 @@ using TinyTrade.Core.Exchanges;
 
 namespace TinyTrade.Core.Strategy;
 
-internal struct StrategyConstructorParameters
+public struct StrategyConstructorParameters
 {
     public Dictionary<string, object> Parameters { get; init; }
 

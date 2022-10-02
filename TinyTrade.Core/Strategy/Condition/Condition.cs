@@ -1,6 +1,8 @@
-﻿namespace TinyTrade.Core.Strategy;
+﻿using TinyTrade.Core.Constructs;
 
-internal abstract class Condition
+namespace TinyTrade.Core.Strategy;
+
+public abstract class Condition
 {
     public bool IsSatisfied { get; protected set; }
 

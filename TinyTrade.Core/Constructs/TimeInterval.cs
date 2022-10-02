@@ -1,6 +1,6 @@
-﻿namespace TinyTrade.Core;
+﻿namespace TinyTrade.Core.Constructs;
 
-internal class TimeInterval
+public class TimeInterval
 {
     private int fromYear;
     private int toYear;

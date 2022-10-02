@@ -1,17 +1,13 @@
 ﻿using System.Reflection;
 using TinyTrade.Core.Strategy;
 
-namespace TinyTrade.Services;
+namespace TinyTrade.Core.Statics;
 
-internal class StrategyResolver : IStrategyResolver
+public static class StrategyResolver
 {
     private const string Namespace = "TinyTrade.Strategies.";
 
-    public StrategyResolver()
-    {
-    }
-
-    public bool TryResolveStrategy(string strategyName, StrategyConstructorParameters parameters, out IStrategy strategy)
+    public static bool TryResolveStrategy(string strategyName, StrategyConstructorParameters parameters, out IStrategy strategy)
     {
         strategy = null!;
         var assembly = Assembly.GetExecutingAssembly();

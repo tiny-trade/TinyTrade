@@ -1,4 +1,4 @@
-﻿using TinyTrade.Core;
+﻿using TinyTrade.Core.Constructs;
 
 namespace TinyTrade.Services.Data;
 

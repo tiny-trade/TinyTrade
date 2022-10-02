@@ -2,7 +2,7 @@
 
 namespace TinyTrade.Core.Exchanges.Backtest;
 
-internal struct BacktestPosition
+public struct BacktestPosition
 {
     public float TakeProfit { get; init; }
 
@@ -12,7 +12,7 @@ internal struct BacktestPosition
 
     public float Stake { get; init; }
 
-    public Side Side { get; init; }
+    public OrderSide Side { get; init; }
 
     public bool IsClosed { get; private set; }
 
@@ -22,7 +22,7 @@ internal struct BacktestPosition
 
     public float Profit { get; private set; }
 
-    public BacktestPosition(Side side, float openPrice, float takeProfit, float stopLoss, float stake)
+    public BacktestPosition(OrderSide side, float openPrice, float takeProfit, float stopLoss, float stake)
     {
         TakeProfit = takeProfit;
         StopLoss = stopLoss;
@@ -39,7 +39,7 @@ internal struct BacktestPosition
     {
         switch (Side)
         {
-            case Side.Buy:
+            case OrderSide.Buy:
                 if (closePrice < StopLoss || closePrice > TakeProfit)
                 {
                     IsClosed = true;
@@ -50,7 +50,7 @@ internal struct BacktestPosition
                 }
                 break;
 
-            case Side.Sell:
+            case OrderSide.Sell:
                 if (closePrice < TakeProfit || closePrice > StopLoss)
                 {
                     IsClosed = true;

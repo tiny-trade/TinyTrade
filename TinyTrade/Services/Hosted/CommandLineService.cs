@@ -63,11 +63,12 @@ internal class CommandLineService : IHostedService
 
         cli.Register(Command.Factory("snap")
             .Description("look for active foretest simulations or live sessions currently running")
-            .ArgumentsHandler(ArgumentsHandler.Factory().Positional("strategy file").Positional("pair symbol").Flag("/d", "download data if not present"))
+            .ArgumentsHandler(ArgumentsHandler.Factory())
             .Add(handler =>
             {
                 logger.LogDebug("Simulating snapping");
                 var service = services.GetRequiredService<SnapService>();
+                service.Snapshot();
             }));
     }
 }

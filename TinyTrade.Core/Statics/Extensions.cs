@@ -1,6 +1,6 @@
-﻿namespace TinyTrade.Statics;
+﻿namespace TinyTrade.Core.Statics;
 
-internal static class Extensions
+public static class Extensions
 {
     public static async Task<bool> DownloadFile(this HttpClient client, string address, string fileName)
     {

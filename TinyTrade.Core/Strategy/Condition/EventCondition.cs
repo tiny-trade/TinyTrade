@@ -1,6 +1,8 @@
-﻿namespace TinyTrade.Core.Strategy;
+﻿using TinyTrade.Core.Constructs;
 
-internal class EventCondition : Condition
+namespace TinyTrade.Core.Strategy;
+
+public class EventCondition : Condition
 {
     private readonly Predicate<DataFrame> callback;
     private readonly int tolerance;

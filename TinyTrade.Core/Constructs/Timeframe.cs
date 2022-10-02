@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
 
-namespace TinyTrade.Core.Models;
+namespace TinyTrade.Core.Constructs;
 
 [Serializable]
-internal struct Timeframe
+public struct Timeframe
 {
     [JsonProperty("flag")]
     public string Flag { get; init; }

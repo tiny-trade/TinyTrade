@@ -19,7 +19,6 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddHostedService<CommandLineService>();
 
         services.AddSingleton(provider => cli);
-        services.AddSingleton<IStrategyResolver, StrategyResolver>();
         services.AddSingleton<IDataDownloadService, BinanceDataDownloadService>();
         services.AddTransient<BacktestService>();
         services.AddSingleton<RunService>();
