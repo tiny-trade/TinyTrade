@@ -4,7 +4,7 @@ using Microsoft.VisualBasic.FileIO;
 using Newtonsoft.Json;
 using System.Globalization;
 using TinyTrade.Core;
-using TinyTrade.Core.Exchanges;
+using TinyTrade.Core.Exchanges.Backtest;
 using TinyTrade.Core.Models;
 using TinyTrade.Core.Strategy;
 using TinyTrade.Services.Data;
@@ -27,7 +27,8 @@ internal class BacktestService
 
     public async Task RunBacktest(string pair, TimeInterval interval, string strategyFile)
     {
-        var exchange = new TestExchange(logger, 100);
+        float initialBalance = 100;
+        var exchange = new BacktestExchange(logger, initialBalance);
         var strategyModel = JsonConvert.DeserializeObject<StrategyModel>(File.ReadAllText(strategyFile));
         if (strategyModel is null)
         {
@@ -59,6 +60,20 @@ internal class BacktestService
         }
         strategy.OnStop();
         bar.Dispose();
+        if (exchange is BacktestExchange testExchange)
+        {
+            var result = new BacktestResult(
+                testExchange.ClosedPositions,
+                new Timeframe(strategyModel.Timeframe),
+                initialBalance,
+                testExchange.GetTotalBalance(),
+                frames.Count);
+            logger.LogInformation("Evaluation result:\n{r}", JsonConvert.SerializeObject(result, Formatting.Indented));
+        }
+        else
+        {
+            logger.LogWarning("Internal error: unable to retrieve test exchange for computing evaluation results");
+        }
         logger.LogInformation("Evaluation completed");
     }
 

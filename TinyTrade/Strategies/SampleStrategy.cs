@@ -10,9 +10,11 @@ internal class SampleStrategy : AbstractStrategy
     {
     }
 
-    protected override float GetStopLoss(IExchange.Side side, DataFrame frame) => throw new NotImplementedException();
+    protected override float GetStakeAmount() => 0F;
 
-    protected override float GetTakeProfit(IExchange.Side side, DataFrame frame) => throw new NotImplementedException();
+    protected override float GetStopLoss(IExchange.Side side, DataFrame frame) => 0F;
+
+    protected override float GetTakeProfit(IExchange.Side side, DataFrame frame) => 0F;
 
     protected override void Tick(DataFrame frame)
     {

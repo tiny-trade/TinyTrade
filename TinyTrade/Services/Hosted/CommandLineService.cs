@@ -45,7 +45,6 @@ internal class CommandLineService : IHostedService
             .ArgumentsHandler(ArgumentsHandler.Factory().Positional("strategy file").Positional("interval pattern").Positional("pair symbol"))
             .AddAsync(async handler =>
             {
-                logger.LogDebug("Simulating backtesting");
                 var service = services.GetRequiredService<BacktestService>();
                 var intervalPattern = handler.GetPositional(1);
                 var pair = handler.GetPositional(2);
