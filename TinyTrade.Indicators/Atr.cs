@@ -37,7 +37,10 @@ public class Atr
             {
                 return (atr * (period - 1) + lastElement) / period;
             }
-            else return null;
+            else
+            {
+                return null;
+            }
         }
         else
         {
