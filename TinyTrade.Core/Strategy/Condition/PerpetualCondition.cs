@@ -1,6 +1,8 @@
-﻿namespace TinyTrade.Core.Strategy;
+﻿using TinyTrade.Core.Constructs;
 
-internal class PerpetualCondition : Condition
+namespace TinyTrade.Core.Strategy;
+
+public class PerpetualCondition : Condition
 {
     private readonly Predicate<DataFrame> callback;
 

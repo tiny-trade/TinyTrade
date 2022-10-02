@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
+using TinyTrade.Core.Constructs;
 using TinyTrade.Core.Exchanges;
 
 namespace TinyTrade.Core.Strategy;
 
-internal abstract class AbstractStrategy : IStrategy
+public abstract class AbstractStrategy : IStrategy
 {
     private readonly ILogger logger;
 
@@ -57,7 +58,7 @@ internal abstract class AbstractStrategy : IStrategy
 
                 if (longConditions.Count > 0 && longConditions.All(c => c.IsSatisfied))
                 {
-                    var side = IExchange.Side.Buy;
+                    var side = OrderSide.Buy;
 
                     exchange.OpenPosition(side, frame.Close, GetStopLoss(side, frame), GetTakeProfit(side, frame), stake);
                     longConditions.ForEach(c => c.Reset());
@@ -65,7 +66,7 @@ internal abstract class AbstractStrategy : IStrategy
 
                 if (shortConditions.Count > 0 && shortConditions.All(c => c.IsSatisfied))
                 {
-                    var side = IExchange.Side.Sell;
+                    var side = OrderSide.Sell;
 
                     exchange.OpenPosition(side, frame.Close, GetStopLoss(side, frame), GetTakeProfit(side, frame), stake);
                     shortConditions.ForEach(c => c.Reset());
@@ -88,9 +89,9 @@ internal abstract class AbstractStrategy : IStrategy
         longConditions.Add(condition);
     }
 
-    protected abstract float GetStopLoss(IExchange.Side side, DataFrame frame);
+    protected abstract float GetStopLoss(OrderSide side, DataFrame frame);
 
-    protected abstract float GetTakeProfit(IExchange.Side side, DataFrame frame);
+    protected abstract float GetTakeProfit(OrderSide side, DataFrame frame);
 
     /// <summary>
     ///   Called each time a closed candle is received

@@ -1,10 +1,10 @@
-﻿using TinyTrade.Core;
+﻿using TinyTrade.Core.Constructs;
 using TinyTrade.Core.Exchanges;
 using TinyTrade.Core.Strategy;
 
 namespace TinyTrade.Strategies;
 
-internal class SampleStrategy : AbstractStrategy
+public class SampleStrategy : AbstractStrategy
 {
     public SampleStrategy(StrategyConstructorParameters parameters) : base(parameters)
     {
@@ -12,9 +12,9 @@ internal class SampleStrategy : AbstractStrategy
 
     protected override float GetStakeAmount() => 0F;
 
-    protected override float GetStopLoss(IExchange.Side side, DataFrame frame) => 0F;
+    protected override float GetStopLoss(OrderSide side, DataFrame frame) => 0F;
 
-    protected override float GetTakeProfit(IExchange.Side side, DataFrame frame) => 0F;
+    protected override float GetTakeProfit(OrderSide side, DataFrame frame) => 0F;
 
     protected override void Tick(DataFrame frame)
     {

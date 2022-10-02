@@ -3,9 +3,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic.FileIO;
 using Newtonsoft.Json;
 using System.Globalization;
-using TinyTrade.Core;
+using TinyTrade.Core.Constructs;
 using TinyTrade.Core.Exchanges.Backtest;
 using TinyTrade.Core.Models;
+using TinyTrade.Core.Statics;
 using TinyTrade.Core.Strategy;
 using TinyTrade.Services.Data;
 using TinyTrade.Statics;
@@ -15,13 +16,11 @@ namespace TinyTrade.Services;
 internal class BacktestService
 {
     private readonly ILogger logger;
-    private readonly IStrategyResolver strategyResolver;
     private readonly IDataDownloadService downloadService;
 
-    public BacktestService(ILoggerProvider provider, IStrategyResolver strategyResolver, IDataDownloadService downloadService)
+    public BacktestService(ILoggerProvider provider, IDataDownloadService downloadService)
     {
         logger = provider.CreateLogger(string.Empty);
-        this.strategyResolver = strategyResolver;
         this.downloadService = downloadService;
     }
 
@@ -36,7 +35,7 @@ internal class BacktestService
             return;
         }
         var cParams = new StrategyConstructorParameters(strategyModel.Parameters, strategyModel.Genotype, logger, exchange);
-        if (!strategyResolver.TryResolveStrategy(strategyModel.Name, cParams, out var strategy))
+        if (!StrategyResolver.TryResolveStrategy(strategyModel.Name, cParams, out var strategy))
         {
             logger.LogError("Unable to instiantiate {s} strategy", strategyModel.Name);
             return;
@@ -62,7 +61,7 @@ internal class BacktestService
         bar.Dispose();
         if (exchange is BacktestExchange testExchange)
         {
-            var result = new BacktestResult(
+            var result = new BacktestResultModel(
                 testExchange.ClosedPositions,
                 new Timeframe(strategyModel.Timeframe),
                 initialBalance,

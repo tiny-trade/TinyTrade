@@ -1,5 +1,6 @@
 ﻿using System.IO.Compression;
-using TinyTrade.Core;
+using TinyTrade.Core.Constructs;
+using TinyTrade.Core.Statics;
 using TinyTrade.Statics;
 
 namespace TinyTrade.Services.Data;

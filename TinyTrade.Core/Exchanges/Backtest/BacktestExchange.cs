@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
+using TinyTrade.Core.Constructs;
 using static TinyTrade.Core.Exchanges.IExchange;
 
 namespace TinyTrade.Core.Exchanges.Backtest;
 
-internal class BacktestExchange : IExchange
+public class BacktestExchange : IExchange
 {
     private readonly ILogger logger;
     private readonly Dictionary<Guid, BacktestPosition> openPositions;
@@ -21,7 +22,7 @@ internal class BacktestExchange : IExchange
         ClosedPositions = new List<BacktestPosition>();
     }
 
-    public void OpenPosition(Side side, float openPrice, float stopLoss, float takeProfit, float stake)
+    public void OpenPosition(OrderSide side, float openPrice, float stopLoss, float takeProfit, float stake)
     {
         if (availableBalance < stake) return;
         availableBalance -= stake;

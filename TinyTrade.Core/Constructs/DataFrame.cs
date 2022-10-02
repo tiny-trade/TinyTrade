@@ -1,6 +1,6 @@
-﻿namespace TinyTrade.Core;
+﻿namespace TinyTrade.Core.Constructs;
 
-internal struct DataFrame
+public struct DataFrame
 {
     public float Open { get; init; }
 

@@ -3,7 +3,7 @@
 namespace TinyTrade.Core.Models;
 
 [Serializable]
-internal class StrategyModel
+public class StrategyModel
 {
     [JsonProperty("name")]
     public string Name { get; init; } = null!;
