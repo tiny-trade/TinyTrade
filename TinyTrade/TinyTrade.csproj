@@ -18,4 +18,8 @@
     <Folder Include="Indicators\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TinyTrade.Core\TinyTrade.Core.csproj" />
+  </ItemGroup>
+
 </Project>
