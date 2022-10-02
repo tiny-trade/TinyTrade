@@ -7,10 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyTrade", "TinyTrade\Tiny
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyTrade.Core", "TinyTrade.Core\TinyTrade.Core.csproj", "{E04380BE-64BC-4D81-923C-B35401DD02FF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyTrade.Live", "TinyTrade.Live\TinyTrade.Live.csproj", "{7670671F-A514-4A44-BDD3-109FE7A48ECB}"
-	ProjectSection(ProjectDependencies) = postProject
-		{E04380BE-64BC-4D81-923C-B35401DD02FF} = {E04380BE-64BC-4D81-923C-B35401DD02FF}
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyTrade.Live", "TinyTrade.Live\TinyTrade.Live.csproj", "{E48C4642-AB76-4BCF-9BA6-B2EA1E5F980F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,10 +23,10 @@ Global
 		{E04380BE-64BC-4D81-923C-B35401DD02FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E04380BE-64BC-4D81-923C-B35401DD02FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E04380BE-64BC-4D81-923C-B35401DD02FF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7670671F-A514-4A44-BDD3-109FE7A48ECB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7670671F-A514-4A44-BDD3-109FE7A48ECB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7670671F-A514-4A44-BDD3-109FE7A48ECB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7670671F-A514-4A44-BDD3-109FE7A48ECB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E48C4642-AB76-4BCF-9BA6-B2EA1E5F980F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E48C4642-AB76-4BCF-9BA6-B2EA1E5F980F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E48C4642-AB76-4BCF-9BA6-B2EA1E5F980F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E48C4642-AB76-4BCF-9BA6-B2EA1E5F980F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
