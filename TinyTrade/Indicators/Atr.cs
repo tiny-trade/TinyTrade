@@ -25,7 +25,7 @@ public class Atr
         queue.Enqueue(lastElement);
         prevClose = close;
 
-        if (queue.Count == period + 1)
+        if (queue.Count > period)
         {
             queue.Dequeue();
         }

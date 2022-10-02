@@ -2,7 +2,7 @@
 
 namespace TinyTrade.Indicators;
 
-internal class RSI
+internal class Rsi
 {
     private int period;
     private int counter;
@@ -11,7 +11,7 @@ internal class RSI
     private float loss;
     private Queue<float> firstCloses;
 
-    public RSI(int period = 14)
+    public Rsi(int period = 14)
     {
         this.period = period;
         firstCloses = new Queue<float>();
