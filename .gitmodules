@@ -1,0 +1,3 @@
+[submodule "TinyTrade.Live"]
+	path = TinyTrade.Live
+	url = https://github.com/TinyTrade/TinyTrade.Live.git
