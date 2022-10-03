@@ -1,6 +1,6 @@
 ﻿namespace TinyTrade.Indicators;
 
-internal class Ma
+public class Ma
 {
     private List<float> firstValues;
     private int period;

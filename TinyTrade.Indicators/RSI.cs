@@ -1,8 +1,6 @@
-﻿using System.Security;
+﻿namespace TinyTrade.Indicators;
 
-namespace TinyTrade.Indicators;
-
-internal class Rsi
+public class Rsi
 {
     private int period;
     private int counter;
@@ -57,16 +55,16 @@ internal class Rsi
 
     private (float, float) AvgGainLoss(Queue<float> closes)
     {
-        List<float> gain = new List<float>();
-        List<float> loss = new List<float>();
-        float prev = closes.Peek();
+        var gain = new List<float>();
+        var loss = new List<float>();
+        var prev = closes.Peek();
         if (closes.Count == 1)
         {
             return (0, 0);
         }
-        for (int i = 1; i < closes.Count; i++)
+        for (var i = 1; i < closes.Count; i++)
         {
-            float current = closes.ElementAt(i);
+            var current = closes.ElementAt(i);
             if (prev <= current)
             {
                 gain.Add(current - prev);

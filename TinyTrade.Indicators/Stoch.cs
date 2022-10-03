@@ -1,6 +1,6 @@
 ﻿namespace TinyTrade.Indicators;
 
-internal class Stoch
+public class Stoch
 {
     private int fastkPeriod;
     private int slowkPeriod;

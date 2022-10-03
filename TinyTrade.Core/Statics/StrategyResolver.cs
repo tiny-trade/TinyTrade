@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using TinyTrade.Core.Strategy;
+﻿using TinyTrade.Core.Strategy;
 
 namespace TinyTrade.Core.Statics;
 
@@ -10,15 +9,19 @@ public static class StrategyResolver
     public static bool TryResolveStrategy(string strategyName, StrategyConstructorParameters parameters, out IStrategy strategy)
     {
         strategy = null!;
-        var assembly = Assembly.GetExecutingAssembly();
-        if (assembly is null)
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+        if (assemblies is null || assemblies.Length < 1) return false;
+        foreach (var a in assemblies)
         {
-            return false;
+            var t = a.ExportedTypes.FirstOrDefault(t => t.Name.Equals(strategyName));
+            if (t is not null)
+            {
+                if (Activator.CreateInstance(t, parameters) is not IStrategy handle) return false;
+                strategy = handle;
+                return true;
+            }
         }
-        var strategyType = Type.GetType(Namespace + strategyName);
-        if (strategyType is null) return false;
-        if (Activator.CreateInstance(strategyType, parameters) is not IStrategy handle) return false;
-        strategy = handle;
-        return true;
+        return false;
     }
 }

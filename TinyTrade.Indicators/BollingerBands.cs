@@ -1,6 +1,6 @@
 ﻿namespace TinyTrade.Indicators;
 
-internal class BollingerBands
+public class BollingerBands
 {
     private int stdev;
     private int period;
@@ -18,7 +18,7 @@ internal class BollingerBands
 
     public (float?, float?, float?) ComputeNext(float close)
     {
-        float? currentMa = ma.ComputeNext(close);
+        var currentMa = ma.ComputeNext(close);
         float currentStdev;
         if (length < period)
         {
@@ -44,7 +44,7 @@ internal class BollingerBands
     private float CalculateStdev(float mean)
     {
         double cumulative = 0;
-        foreach (float v in firstValues)
+        foreach (var v in firstValues)
         {
             cumulative += Math.Pow(v - mean, 2);
         }

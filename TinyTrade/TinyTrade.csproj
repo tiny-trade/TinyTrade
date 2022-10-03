@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TinyTrade.Core\TinyTrade.Core.csproj" />
+    <ProjectReference Include="..\TinyTrade.Strategies\TinyTrade.Strategies.csproj" />
   </ItemGroup>
 
 </Project>

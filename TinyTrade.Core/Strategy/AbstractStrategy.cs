@@ -8,17 +8,19 @@ public abstract class AbstractStrategy : IStrategy
 {
     private readonly ILogger logger;
 
-    private readonly IExchange exchange;
     private readonly List<Condition> shortConditions;
+
     private readonly List<Condition> longConditions;
 
     public int MaxConcurrentPositions { get; init; }
 
+    protected IExchange Exchange { get; private set; }
+
     protected AbstractStrategy(StrategyConstructorParameters parameters)
     {
         logger = parameters.Logger;
-        exchange = parameters.Exchange;
-        MaxConcurrentPositions = !parameters.Parameters.TryGetValue("maxConcurrentPositions", out var val) ? 1 : Convert.ToInt32(val);
+        Exchange = parameters.Exchange;
+        MaxConcurrentPositions = Convert.ToInt32(parameters.Parameters.GetValueOrDefault("maxConcurrentPositions", 1));
         shortConditions = new List<Condition>();
         longConditions = new List<Condition>();
     }
@@ -37,7 +39,7 @@ public abstract class AbstractStrategy : IStrategy
 
     public void UpdateState(DataFrame frame)
     {
-        exchange.Tick(frame);
+        Exchange.Tick(frame);
         if (frame.IsClosed)
         {
             Tick(frame);
@@ -50,17 +52,17 @@ public abstract class AbstractStrategy : IStrategy
                 c.Tick(frame);
             }
 
-            var openPositions = exchange.GetOpenPositionsNumber();
-            var balance = exchange.GetAvailableBalance();
+            var openPositions = Exchange.GetOpenPositionsNumber();
+            var balance = Exchange.GetAvailableBalance();
             if (openPositions < MaxConcurrentPositions && balance > 0)
             {
-                var stake = GetStakeAmount();
+                var stake = balance * GetStakeAmount();
 
                 if (longConditions.Count > 0 && longConditions.All(c => c.IsSatisfied))
                 {
                     var side = OrderSide.Buy;
 
-                    exchange.OpenPosition(side, frame.Close, GetStopLoss(side, frame), GetTakeProfit(side, frame), stake);
+                    Exchange.OpenPosition(side, frame.Close, GetStopLoss(side, frame), GetTakeProfit(side, frame), stake);
                     longConditions.ForEach(c => c.Reset());
                 }
 
@@ -68,7 +70,7 @@ public abstract class AbstractStrategy : IStrategy
                 {
                     var side = OrderSide.Sell;
 
-                    exchange.OpenPosition(side, frame.Close, GetStopLoss(side, frame), GetTakeProfit(side, frame), stake);
+                    Exchange.OpenPosition(side, frame.Close, GetStopLoss(side, frame), GetTakeProfit(side, frame), stake);
                     shortConditions.ForEach(c => c.Reset());
                 }
             }
@@ -77,16 +79,22 @@ public abstract class AbstractStrategy : IStrategy
 
     protected abstract float GetStakeAmount();
 
-    protected void AddShortCondition(Condition condition)
+    protected AbstractStrategy AddShortCondition(Condition condition)
     {
-        if (shortConditions.Contains(condition)) return;
-        shortConditions.Add(condition);
+        if (!shortConditions.Contains(condition))
+        {
+            shortConditions.Add(condition);
+        }
+        return this;
     }
 
-    protected void AddLongCondition(Condition condition)
+    protected AbstractStrategy AddLongCondition(Condition condition)
     {
-        if (longConditions.Contains(condition)) return;
-        longConditions.Add(condition);
+        if (!longConditions.Contains(condition))
+        {
+            longConditions.Add(condition);
+        }
+        return this;
     }
 
     protected abstract float GetStopLoss(OrderSide side, DataFrame frame);

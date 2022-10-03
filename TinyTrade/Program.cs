@@ -30,6 +30,7 @@ var host = Host.CreateDefaultBuilder(args)
         builder.AddProvider(new CliLoggerProvider(cli));
     })
     .Build();
+
 ConsoleExtensions.ClearConsoleLine();
 Console.Title = "TinyTrade";
 Console.WriteLine("==========  TinyTrade ==========\n");

@@ -1,6 +1,6 @@
 ﻿namespace TinyTrade.Indicators;
 
-internal class StochRsi
+public class StochRsi
 {
     private int period;
     private int fastkPeriod;
@@ -28,7 +28,7 @@ internal class StochRsi
         float? fastK;
         float? fastD;
 
-        float? current = rsi.ComputeNext(close);
+        var current = rsi.ComputeNext(close);
         values.Enqueue(current);
         if (values.Count > period) values.Dequeue();
 
