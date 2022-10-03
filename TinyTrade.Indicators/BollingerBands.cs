@@ -7,6 +7,8 @@ public class BollingerBands
     private readonly Queue<float> firstValues;
     private readonly Ma ma;
 
+    public (float?, float?, float?) Last { get; private set; } = (null, null, null);
+
     public BollingerBands(int period = 20, int stdev = 2)
     {
         this.stdev = stdev;
@@ -29,16 +31,17 @@ public class BollingerBands
         {
             return (null, null, null);
         }
-        float currentStdev = CalculateStdev(firstValues.Average());
+        var currentStdev = CalculateStdev(firstValues.Average());
 
         var bU = currentMa + stdev * currentStdev;
         var bD = currentMa - stdev * currentStdev;
-
+        Last = (currentMa, bU, bD);
         return (currentMa, bU, bD);
     }
 
     public void Reset()
     {
+        Last = (null, null, null);
         firstValues.Clear();
         ma.Reset();
     }

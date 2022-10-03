@@ -1,8 +1,6 @@
-﻿using static TinyTrade.Core.Exchanges.IExchange;
+﻿namespace TinyTrade.Core.Exchanges.Backtest;
 
-namespace TinyTrade.Core.Exchanges.Backtest;
-
-public struct BacktestPosition
+public class BacktestPosition
 {
     public float TakeProfit { get; init; }
 
@@ -18,7 +16,7 @@ public struct BacktestPosition
 
     public bool IsWon { get; private set; }
 
-    public float ResultPercentage { get; private set; }
+    public float ResultRatio { get; private set; }
 
     public float Profit { get; private set; }
 
@@ -31,7 +29,7 @@ public struct BacktestPosition
         Stake = stake;
         IsClosed = false;
         IsWon = false;
-        ResultPercentage = 0;
+        ResultRatio = 0;
         Profit = 0;
     }
 
@@ -44,8 +42,8 @@ public struct BacktestPosition
                 {
                     IsClosed = true;
                     IsWon = closePrice >= TakeProfit;
-                    ResultPercentage = (closePrice / OpenPrice) - 1;
-                    Profit = Stake * ResultPercentage;
+                    ResultRatio = (closePrice / OpenPrice) - 1;
+                    Profit = Stake * ResultRatio;
                     return true;
                 }
                 break;
@@ -55,8 +53,8 @@ public struct BacktestPosition
                 {
                     IsClosed = true;
                     IsWon = closePrice <= TakeProfit;
-                    ResultPercentage = (OpenPrice / closePrice) - 1;
-                    Profit = Stake * ResultPercentage;
+                    ResultRatio = (OpenPrice / closePrice) - 1;
+                    Profit = Stake * ResultRatio;
                     return true;
                 }
                 break;

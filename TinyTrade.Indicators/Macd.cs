@@ -6,11 +6,21 @@ public class Macd
     private readonly Ema emaSlow;
     private readonly Ema emaSignal;
 
+    public (float?, float?, float?) Last { get; private set; } = (null, null, null);
+
     public Macd(int fast = 12, int slow = 26, int signal = 9)
     {
         emaFast = new Ema(fast);
         emaSlow = new Ema(slow);
         emaSignal = new Ema(signal);
+    }
+
+    public void Reset()
+    {
+        Last = (null, null, null);
+        emaFast.Reset();
+        emaSlow.Reset();
+        emaSignal.Reset();
     }
 
     public (float?, float?, float?) ComputeNext(float close)
@@ -25,6 +35,8 @@ public class Macd
         var macd = emaF - emaS;
 
         var sig = emaSignal.ComputeNext((float)macd);
-        return (sig is null ? null : macd - sig, macd, sig);
+        var res = (sig is null ? null : macd - sig, macd, sig);
+        Last = res;
+        return res;
     }
 }

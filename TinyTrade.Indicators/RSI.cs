@@ -2,12 +2,14 @@
 
 public class Rsi
 {
-    private int period;
+    private readonly int period;
+    private readonly Queue<float> firstCloses;
     private int counter;
     private float prev;
     private float gain;
     private float loss;
-    private Queue<float> firstCloses;
+
+    public float? Last { get; private set; } = null;
 
     public Rsi(int period = 14)
     {
@@ -46,7 +48,19 @@ public class Rsi
         }
 
         prev = close;
-        return counter < period + 1 ? null : 100F - (100F / (1 + (gain / loss)));
+        float? res = counter < period + 1 ? null : 100F - (100F / (1 + (gain / loss)));
+        Last = res;
+        return res;
+    }
+
+    public void Reset()
+    {
+        Last = null;
+        firstCloses.Clear();
+        counter = 0;
+        prev = 0;
+        gain = 0;
+        loss = 0;
     }
 
     private (float, float) AvgGainLoss(Queue<float> closes)

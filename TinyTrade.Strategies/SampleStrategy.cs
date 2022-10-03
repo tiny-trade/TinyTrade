@@ -18,13 +18,7 @@ public class SampleStrategy : AbstractStrategy
     private readonly float stakePercentage;
     private readonly int intervalTolerance;
     private readonly ILogger logger;
-    private float? atrVal = null;
-    private float? ema1Val = null;
-    private float? ema2Val = null;
-    private float? ema3Val = null;
-    private float? stochK = null;
     private float? lastStochK = null;
-    private float? stochD = null;
     private float? lastStochD = null;
 
     public SampleStrategy(StrategyConstructorParameters parameters) : base(parameters)
@@ -41,21 +35,27 @@ public class SampleStrategy : AbstractStrategy
         stochRsi = new StochRsi();
 
         AddLongCondition(new PerpetualCondition(f =>
-            ema1Val is not null && ema2Val is not null && ema3Val is not null && ema3Val < ema2Val && ema2Val < ema1Val && ema1Val < f.Close));
+            ema1.Last is not null && ema2.Last is not null && ema3.Last is not null && ema3.Last < ema2.Last && ema2.Last < ema1.Last && ema1.Last < f.Close));
         AddLongCondition(new EventCondition(f =>
-            lastStochK is not null && stochK is not null && lastStochD is not null && stochD is not null && lastStochK <= lastStochD && stochK > stochD, intervalTolerance));
+        {
+            var stoch = stochRsi.Last;
+            return stoch is not (null, null) && lastStochK is not null && lastStochD is not null && lastStochK <= lastStochD && stoch.Item1 > stoch.Item2;
+        }, intervalTolerance));
 
         AddShortCondition(new PerpetualCondition(f =>
-            ema1Val is not null && ema2Val is not null && ema3Val is not null && ema3Val > ema2Val && ema2Val > ema1Val && ema1Val > f.Close));
+            ema1.Last is not null && ema2.Last is not null && ema3.Last is not null && ema3.Last > ema2.Last && ema2.Last > ema1.Last && ema1.Last > f.Close));
         AddShortCondition(new EventCondition(f =>
-            lastStochK is not null && stochK is not null && lastStochD is not null && stochD is not null && lastStochK >= lastStochD && stochK < stochD, intervalTolerance));
+        {
+            var stoch = stochRsi.Last;
+            return stoch is not (null, null) && lastStochK is not null && lastStochD is not null && lastStochK >= lastStochD && stoch.Item1 < stoch.Item2;
+        }, intervalTolerance));
     }
 
     protected override float GetStakeAmount() => stakePercentage;
 
     protected override float GetStopLoss(OrderSide side, DataFrame frame)
     {
-        var ratio = (float)(atrFactor * atrVal)!;
+        var ratio = (float)(atrFactor * atr.Last)!;
         return side switch
         {
             OrderSide.Buy => frame.Close - ratio,
@@ -66,7 +66,7 @@ public class SampleStrategy : AbstractStrategy
 
     protected override float GetTakeProfit(OrderSide side, DataFrame frame)
     {
-        var ratio = (float)(atrFactor * atrVal)!;
+        var ratio = (float)(atrFactor * atr.Last)!;
         return side switch
         {
             OrderSide.Buy => frame.Close + (ratio * riskRewardRatio),
@@ -79,13 +79,11 @@ public class SampleStrategy : AbstractStrategy
     {
         base.Tick(frame);
 
-        atrVal = atr.ComputeNext(frame.High, frame.Low, frame.Close);
-        ema1Val = ema1.ComputeNext(frame.Close);
-        ema2Val = ema2.ComputeNext(frame.Close);
-        ema3Val = ema3.ComputeNext(frame.Close);
-        lastStochK = stochK;
-        lastStochD = stochD;
-        (stochK, stochD) = stochRsi.ComputeNext(frame.Close);
-        //logger.LogTrace("{price} | {atr}, {e1}, {e2}, {e3}, ({k},{d})", frame.Close, atrVal, ema1Val, ema2Val, ema3Val, stochK, stochD);
+        atr.ComputeNext(frame.High, frame.Low, frame.Close);
+        ema1.ComputeNext(frame.Close);
+        ema2.ComputeNext(frame.Close);
+        ema3.ComputeNext(frame.Close);
+        (lastStochK, lastStochD) = stochRsi.Last;
+        stochRsi.ComputeNext(frame.Close);
     }
 }

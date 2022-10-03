@@ -32,4 +32,10 @@ public class EventCondition : Condition
             currentTolerance++;
         }
     }
+
+    public override void Reset()
+    {
+        base.Reset();
+        currentTolerance = 0;
+    }
 }

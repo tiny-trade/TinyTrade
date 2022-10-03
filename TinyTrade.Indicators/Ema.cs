@@ -7,6 +7,8 @@ public class Ema
     private readonly Queue<float> firstValues;
     private float previousValue;
 
+    public float? Last { get; private set; } = null;
+
     public Ema(int period = 20, int smoothing = 2)
     {
         firstValues = new Queue<float>();
@@ -27,12 +29,14 @@ public class Ema
         {
             var smooth = smoothing / (1F + period);
             previousValue = close * smooth + previousValue * (1F - smooth);
+            Last = previousValue;
             return previousValue;
         }
     }
 
     public void Reset()
     {
+        Last = null;
         previousValue = 0;
         firstValues.Clear();
     }
