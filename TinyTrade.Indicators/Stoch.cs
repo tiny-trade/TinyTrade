@@ -2,15 +2,15 @@
 
 public class Stoch
 {
-    private int fastkPeriod;
-    private int slowkPeriod;
-    private int slowdPeriod;
-    private Queue<float?> stoch;
-    private Queue<float?> closeQ;
-    private Queue<float?> highQ;
-    private Queue<float?> lowQ;
-    private Queue<float?> fastk;
-    private Queue<float?> slowd;
+    private readonly int fastkPeriod;
+    private readonly int slowkPeriod;
+    private readonly int slowdPeriod;
+    private readonly Queue<float?> stoch;
+    private readonly Queue<float?> closeQ;
+    private readonly Queue<float?> highQ;
+    private readonly Queue<float?> lowQ;
+    private readonly Queue<float?> fastk;
+    private readonly Queue<float?> slowd;
 
     public Stoch(int fastkPeriod = 14, int slowkPeriod = 3, int slowdPeriod = 3)
     {
@@ -50,17 +50,17 @@ public class Stoch
         {
             closeQ.Dequeue();
         }
-
         minVal = lowQ.Min();
         maxVal = highQ.Max();
-        diff = (maxVal - minVal);
-        if (diff == 0) diff = 1;
+        diff = maxVal - minVal;
+        if (diff == 0) diff = 1F;
 
         lastK = ((close - minVal) / diff) * 100;
         stoch.Enqueue(lastK);
 
-        if (stoch.Count == fastkPeriod)
+        if (stoch.Count >= fastkPeriod)
         {
+            stoch.Dequeue();
             fastk.Enqueue(lastK);
             if (fastk.Count > slowkPeriod)
             {
@@ -73,7 +73,7 @@ public class Stoch
             }
 
             slowd.Enqueue(newK);
-            if (slowd.Count > slowkPeriod)
+            if (slowd.Count > slowdPeriod)
             {
                 slowd.Dequeue();
                 stochD = slowd.Average();

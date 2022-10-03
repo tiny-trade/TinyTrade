@@ -1,4 +1,5 @@
-﻿using TinyTrade.Core.Constructs;
+﻿using Microsoft.Extensions.Logging;
+using TinyTrade.Core.Constructs;
 using TinyTrade.Core.Exchanges;
 using TinyTrade.Core.Strategy;
 using TinyTrade.Indicators;
@@ -16,6 +17,7 @@ public class SampleStrategy : AbstractStrategy
     private readonly float atrFactor;
     private readonly float stakePercentage;
     private readonly int intervalTolerance;
+    private readonly ILogger logger;
     private float? atrVal = null;
     private float? ema1Val = null;
     private float? ema2Val = null;
@@ -27,6 +29,7 @@ public class SampleStrategy : AbstractStrategy
 
     public SampleStrategy(StrategyConstructorParameters parameters) : base(parameters)
     {
+        logger = parameters.Logger;
         riskRewardRatio = parameters.Genotype.GetValueOrDefault("riskRewardRatio");
         atrFactor = parameters.Genotype.GetValueOrDefault("atrFactor");
         stakePercentage = parameters.Genotype.GetValueOrDefault("stakePercentage");
@@ -83,5 +86,6 @@ public class SampleStrategy : AbstractStrategy
         lastStochK = stochK;
         lastStochD = stochD;
         (stochK, stochD) = stochRsi.ComputeNext(frame.Close);
+        logger.LogTrace("{price} | {atr}, {e1}, {e2}, {e3}, ({k},{d})", frame.Close, atrVal, ema1Val, ema2Val, ema3Val, stochK, stochD);
     }
 }

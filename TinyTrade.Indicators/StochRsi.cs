@@ -37,13 +37,9 @@ public class StochRsi
         diff = (maxVal - minVal);
         if (diff == 0) diff = 1;
 
-        fastK = (((current - minVal) / diff) * 100);
+        fastK = (current - minVal) / diff * 100F;
         fastD = stoch.ComputeNext(current, current, current).Item1;
 
-        if (fastD == null)
-        {
-            return (null, null);
-        }
-        return (fastK, fastD);
+        return fastD == null ? (null, null) : ((float?, float?))(fastK, fastD);
     }
 }

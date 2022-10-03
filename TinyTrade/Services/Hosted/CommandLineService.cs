@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TinyTrade.Strategies.Link;
 
 namespace TinyTrade.Services.Hosted;
 
@@ -22,8 +21,6 @@ internal class CommandLineService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        AssemblyLink.DummyLink();
-        logger.LogDebug("Strategies assembly linked");
         _ = Task.Run(() => cli.RunAsync(), cancellationToken);
         await Task.CompletedTask;
     }

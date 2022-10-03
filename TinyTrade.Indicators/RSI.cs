@@ -46,11 +46,7 @@ public class Rsi
         }
 
         prev = close;
-        if (counter < period + 1)
-        {
-            return null;
-        }
-        return 100 - (100 / (1 + (gain / loss)));
+        return counter < period + 1 ? null : 100F - (100F / (1 + (gain / loss)));
     }
 
     private (float, float) AvgGainLoss(Queue<float> closes)

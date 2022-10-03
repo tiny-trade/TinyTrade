@@ -2,9 +2,9 @@
 
 public class Ema
 {
-    private int period;
-    private int smoothing;
-    private List<float> firstValues;
+    private readonly int period;
+    private readonly int smoothing;
+    private readonly List<float> firstValues;
     private float previousValue;
     private int length;
 
@@ -28,8 +28,8 @@ public class Ema
         }
         else
         {
-            float smooth = smoothing / (1 + period);
-            previousValue = close * smooth + previousValue * (1 - smooth);
+            var smooth = smoothing / (1F + period);
+            previousValue = close * smooth + previousValue * (1F - smooth);
             return previousValue;
         }
     }
@@ -38,6 +38,6 @@ public class Ema
     {
         length = 0;
         previousValue = 0;
-        firstValues = new List<float>();
+        firstValues.Clear();
     }
 }
