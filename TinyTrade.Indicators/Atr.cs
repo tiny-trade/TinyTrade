@@ -2,45 +2,37 @@
 
 public class Atr
 {
-    private int period;
+    private readonly int period;
+    private readonly Queue<float> tr;
     private float prevClose;
     private float atr;
     private int count;
-    private Queue<float> queue;
-    private float lastElement;
 
     public Atr(int period = 14)
     {
         this.period = period;
-        queue = new Queue<float>();
+        prevClose = 0;
+        tr = new Queue<float>();
         atr = 0;
         count = 0;
-        lastElement = 0;
     }
 
     public float? ComputeNext(float high, float low, float close)
     {
         count += 1;
-        lastElement = Math.Max(high - low, Math.Max(Math.Abs(high - prevClose), Math.Abs(low - prevClose)));
-        queue.Enqueue(lastElement);
-        prevClose = close;
-
-        if (queue.Count > period)
+        float lastElement = Math.Max(high - low, Math.Max(Math.Abs(high - prevClose), Math.Abs(low - prevClose)));
+        tr.Enqueue(lastElement);
+        if (tr.Count > period)
         {
-            queue.Dequeue();
+            tr.Dequeue();
         }
+
+        prevClose = close;
 
         if (count <= period + 1)
         {
-            atr = queue.Average();
-            if (count == period + 1)
-            {
-                return (atr * (period - 1) + lastElement) / period;
-            }
-            else
-            {
-                return null;
-            }
+            atr = tr.Average();
+            return count == period + 1 ? (atr * (period - 1) + lastElement) / period : null;
         }
         else
         {

@@ -2,40 +2,25 @@
 
 public class Ma
 {
-    private List<float> firstValues;
-    private int period;
-    private int length;
-    private float val;
+    private readonly int period;
+    private readonly Queue<float> firstValues;
 
     public Ma(int period = 20)
     {
         this.period = period;
-        firstValues = new List<float>();
-        length = 0;
-        val = 0;
+        firstValues = new Queue<float>();
     }
 
     public float? ComputeNext(float close)
     {
-        if (length < period)
+        firstValues.Enqueue(close);
+        if (firstValues.Count > period)
         {
-            firstValues.Add(close);
-            length++;
-            return null;
+            firstValues.Dequeue();
         }
-        else
-        {
-            firstValues.RemoveAt(firstValues.Count - 1);
-            firstValues.Add(close);
-            val = firstValues.Sum();
-            return val / period;
-        }
+
+        return firstValues.Count < period ? null : firstValues.Average();
     }
 
-    public void Reset()
-    {
-        length = 0;
-        val = 0;
-        firstValues = new List<float>();
-    }
+    public void Reset() => firstValues.Clear();
 }

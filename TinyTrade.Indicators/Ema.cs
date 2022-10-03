@@ -4,25 +4,22 @@ public class Ema
 {
     private readonly int period;
     private readonly int smoothing;
-    private readonly List<float> firstValues;
+    private readonly Queue<float> firstValues;
     private float previousValue;
-    private int length;
 
     public Ema(int period = 20, int smoothing = 2)
     {
-        firstValues = new List<float>();
+        firstValues = new Queue<float>();
         this.period = period;
         this.smoothing = smoothing;
         previousValue = 0;
-        length = 0;
     }
 
     public float? ComputeNext(float close)
     {
-        if (length < period)
+        if (firstValues.Count < period)
         {
-            firstValues.Add(close);
-            length++;
+            firstValues.Enqueue(close);
             previousValue = firstValues.Average();
             return null;
         }
@@ -36,7 +33,6 @@ public class Ema
 
     public void Reset()
     {
-        length = 0;
         previousValue = 0;
         firstValues.Clear();
     }

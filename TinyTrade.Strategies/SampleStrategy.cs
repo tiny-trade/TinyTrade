@@ -69,8 +69,8 @@ public class SampleStrategy : AbstractStrategy
         var ratio = (float)(atrFactor * atrVal)!;
         return side switch
         {
-            OrderSide.Buy => frame.Close + ratio * riskRewardRatio,
-            OrderSide.Sell => frame.Close - ratio * riskRewardRatio,
+            OrderSide.Buy => frame.Close + (ratio * riskRewardRatio),
+            OrderSide.Sell => frame.Close - (ratio * riskRewardRatio),
             _ => frame.Close,
         };
     }
@@ -86,6 +86,6 @@ public class SampleStrategy : AbstractStrategy
         lastStochK = stochK;
         lastStochD = stochD;
         (stochK, stochD) = stochRsi.ComputeNext(frame.Close);
-        logger.LogTrace("{price} | {atr}, {e1}, {e2}, {e3}, ({k},{d})", frame.Close, atrVal, ema1Val, ema2Val, ema3Val, stochK, stochD);
+        //logger.LogTrace("{price} | {atr}, {e1}, {e2}, {e3}, ({k},{d})", frame.Close, atrVal, ema1Val, ema2Val, ema3Val, stochK, stochD);
     }
 }
