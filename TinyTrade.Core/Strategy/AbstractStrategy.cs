@@ -6,19 +6,19 @@ namespace TinyTrade.Core.Strategy;
 
 public abstract class AbstractStrategy : IStrategy
 {
-    private readonly ILogger logger;
-
     private readonly List<Condition> shortConditions;
 
     private readonly List<Condition> longConditions;
 
     public int MaxConcurrentPositions { get; init; }
 
+    protected ILogger Logger { get; private set; }
+
     protected IExchange Exchange { get; private set; }
 
     protected AbstractStrategy(StrategyConstructorParameters parameters)
     {
-        logger = parameters.Logger;
+        Logger = parameters.Logger;
         Exchange = parameters.Exchange;
         MaxConcurrentPositions = Convert.ToInt32(parameters.Parameters.GetValueOrDefault("maxConcurrentPositions", 1));
         shortConditions = new List<Condition>();
