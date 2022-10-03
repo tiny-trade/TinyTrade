@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using TinyTrade.Core.Constructs;
-using static TinyTrade.Core.Exchanges.IExchange;
 
 namespace TinyTrade.Core.Exchanges.Backtest;
 

@@ -6,7 +6,10 @@ using TinyTrade.Logging;
 using TinyTrade.Services;
 using TinyTrade.Services.Data;
 using TinyTrade.Services.Hosted;
+using TinyTrade.Strategies.Link;
 
+Console.Title = "TinyTrade";
+Console.WriteLine("==========  TinyTrade ==========\n");
 var cli = CommandLine.Factory()
         .OnUnrecognized((logger, cmd) => logger.LogError("{cmd} not recognized", cmd))
         .Build();
@@ -30,7 +33,12 @@ var host = Host.CreateDefaultBuilder(args)
         builder.AddProvider(new CliLoggerProvider(cli));
     })
     .Build();
-ConsoleExtensions.ClearConsoleLine();
-Console.Title = "TinyTrade";
-Console.WriteLine("==========  TinyTrade ==========\n");
+
+var loggerProvider = host.Services.GetRequiredService<ILoggerProvider>();
+var logger = loggerProvider.CreateLogger(string.Empty);
+
+// DO NOT REMOVE THIS, necessary for preventing Visual Studio from stripping assemblies that are used solely through reflection
+AssemblyLink.DummyLink();
+logger.LogDebug("Strategies assembly linked");
+
 await host.RunAsync();

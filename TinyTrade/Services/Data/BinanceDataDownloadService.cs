@@ -25,9 +25,11 @@ internal class BinanceDataDownloadService : IDataDownloadService
         await Task.Run(async () =>
         {
             var periods = interval.GetPeriods();
-            for (var i = 0; i < periods.Count(); i++)
+            var val = 0;
+
+            await Parallel.ForEachAsync(periods, new ParallelOptions() { MaxDegreeOfParallelism = 8 }, async (p, token) =>
             {
-                var elem = periods.ElementAt(i);
+                var elem = p;
                 var fileName = $"{Paths.Cache}/{pair}-1m-{elem}.csv";
                 if (!File.Exists(fileName))
                 {
@@ -39,8 +41,9 @@ internal class BinanceDataDownloadService : IDataDownloadService
                     }
                     archives.Add(archiveName);
                 }
-                progress?.Report(("Downloading data", (float)i / (periods.Count() - 1)));
-            }
+                Interlocked.Increment(ref val);
+                progress?.Report(("Downloading data", (float)val / (periods.Count() - 1)));
+            });
         });
         await Task.Run(() =>
         {

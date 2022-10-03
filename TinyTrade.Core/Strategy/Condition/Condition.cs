@@ -16,5 +16,5 @@ public abstract class Condition
     /// <param name="frame"> </param>
     public abstract void Tick(DataFrame frame);
 
-    public void Reset() => IsSatisfied = false;
+    public virtual void Reset() => IsSatisfied = false;
 }

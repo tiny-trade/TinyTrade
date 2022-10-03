@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic.FileIO;
 using Newtonsoft.Json;
+using System.Diagnostics;
 using System.Globalization;
 using TinyTrade.Core.Constructs;
 using TinyTrade.Core.Exchanges.Backtest;
@@ -47,9 +48,10 @@ internal class BacktestService
         bar.Dispose();
         var spinner = ConsoleSpinner.Factory().Info("Loading data ").Frames(12, "-   ", "--  ", "--- ", "----", " ---", "  --", "   -", "    ").Build();
         var frames = await spinner.Await(GetIntervalFrames(interval, pair, Timeframe.FlagToMinutes(strategyModel.Timeframe)));
-        logger.LogTrace("{c} klines loaded", frames.Count);
 
         bar = ConsoleProgressBar.Factory().Lenght(20).Build();
+        var watch = new Stopwatch();
+        watch.Start();
         bar.Report(0F, $"Evaluating {strategy}");
         strategy.OnStart();
         for (var i = 0; i < frames.Count; i++)
@@ -59,6 +61,8 @@ internal class BacktestService
         }
         strategy.OnStop();
         bar.Dispose();
+        watch.Stop();
+        var millis = watch.ElapsedMilliseconds;
         if (exchange is BacktestExchange testExchange)
         {
             var result = new BacktestResultModel(
@@ -67,6 +71,7 @@ internal class BacktestService
                 initialBalance,
                 testExchange.GetTotalBalance(),
                 frames.Count);
+            logger.LogTrace("Processed {c} klines in just {ms}ms O.O - Hail to the C#!", frames.Count, millis);
             logger.LogInformation("Evaluation result:\n{r}", JsonConvert.SerializeObject(result, Formatting.Indented));
         }
         else

@@ -1,49 +1,43 @@
 ﻿namespace TinyTrade.Indicators;
 
-internal class StochRsi
+public class StochRsi
 {
-    private int period;
-    private int fastkPeriod;
-    private int slowdPeriod;
-    private Queue<float?> values;
-    private Rsi rsi;
-    private Stoch stoch;
+    private readonly Rsi rsi;
+    private readonly Stoch stoch;
+    private readonly Ma dMa;
 
-    public StochRsi(int period = 14, int fastkPeriod = 13, int slowdPeriod = 3)
+    public (float?, float?) Last { get; private set; } = (null, null);
+
+    public StochRsi(int period = 14, int fastkPeriod = 3, int slowdPeriod = 3)
     {
-        this.period = period;
-        this.fastkPeriod = fastkPeriod;
-        this.slowdPeriod = slowdPeriod;
-
-        values = new Queue<float?>();
         rsi = new Rsi(period);
         stoch = new Stoch(period, 3, fastkPeriod);
+        dMa = new Ma(slowdPeriod);
+    }
+
+    public void Reset()
+    {
+        Last = (null, null);
+        rsi.Reset();
+        stoch.Reset();
+        dMa.Reset();
     }
 
     public (float?, float?) ComputeNext(float close)
     {
-        float? minVal;
-        float? maxVal;
-        float? diff;
-        float? fastK;
         float? fastD;
-
-        float? current = rsi.ComputeNext(close);
-        values.Enqueue(current);
-        if (values.Count > period) values.Dequeue();
-
-        minVal = values.Min();
-        maxVal = values.Max();
-        diff = (maxVal - minVal);
-        if (diff == 0) diff = 1;
-
-        fastK = (((current - minVal) / diff) * 100);
-        fastD = stoch.ComputeNext(current, current, current).Item1;
-
-        if (fastD == null)
+        var current = rsi.ComputeNext(close);
+        fastD = current is null ? null : stoch.ComputeNext((float)current, (float)current, (float)current).Item1;
+        if (fastD is not null)
+        {
+            var slowD = dMa.ComputeNext((float)fastD);
+            var res = slowD is not null ? ((float?, float?))(fastD, slowD) : (null, null);
+            Last = res;
+            return res;
+        }
+        else
         {
             return (null, null);
         }
-        return (fastK, fastD);
     }
 }

@@ -1,54 +1,59 @@
 ﻿namespace TinyTrade.Indicators;
 
-internal class BollingerBands
+public class BollingerBands
 {
-    private int stdev;
-    private int period;
-    private int length;
-    private List<float> firstValues;
-    private Ma ma;
+    private readonly int stdev;
+    private readonly int period;
+    private readonly Queue<float> firstValues;
+    private readonly Ma ma;
+
+    public (float?, float?, float?) Last { get; private set; } = (null, null, null);
 
     public BollingerBands(int period = 20, int stdev = 2)
     {
         this.stdev = stdev;
         ma = new Ma(period);
-        length = 0;
-        firstValues = new List<float>();
+        this.period = period;
+        firstValues = new Queue<float>();
     }
 
-    public (float?, float?, float?) ComputeNext(float close)
+    public (float?, float?, float?) ComputeNext(float high, float low, float close)
     {
-        float? currentMa = ma.ComputeNext(close);
-        float currentStdev;
-        if (length < period)
+        var tp = (close + high + low) / 3F;
+        var currentMa = ma.ComputeNext(tp);
+
+        firstValues.Enqueue(tp);
+        if (firstValues.Count > period)
         {
-            length++;
-            firstValues.Add(close);
+            firstValues.Dequeue();
+        }
+        if (firstValues.Count < period)
+        {
             return (null, null, null);
         }
-        else
-        {
-            if (currentMa == null) return (null, null, null);
-            currentStdev = CalculateStdev((float)currentMa);
-            return (currentMa, currentMa + (currentStdev * stdev), currentMa - (currentStdev * stdev));
-        }
+        var currentStdev = CalculateStdev(firstValues.Average());
+
+        var bU = currentMa + stdev * currentStdev;
+        var bD = currentMa - stdev * currentStdev;
+        Last = (currentMa, bU, bD);
+        return (currentMa, bU, bD);
     }
 
     public void Reset()
     {
-        length = 0;
-        firstValues = new List<float>();
+        Last = (null, null, null);
+        firstValues.Clear();
         ma.Reset();
     }
 
     private float CalculateStdev(float mean)
     {
         double cumulative = 0;
-        foreach (float v in firstValues)
+        foreach (var v in firstValues)
         {
             cumulative += Math.Pow(v - mean, 2);
         }
-        cumulative /= length;
+        cumulative /= firstValues.Count;
         return (float)Math.Sqrt(cumulative);
     }
 }

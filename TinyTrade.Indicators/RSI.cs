@@ -1,15 +1,15 @@
-﻿using System.Security;
+﻿namespace TinyTrade.Indicators;
 
-namespace TinyTrade.Indicators;
-
-internal class Rsi
+public class Rsi
 {
-    private int period;
+    private readonly int period;
+    private readonly Queue<float> firstCloses;
     private int counter;
     private float prev;
     private float gain;
     private float loss;
-    private Queue<float> firstCloses;
+
+    public float? Last { get; private set; } = null;
 
     public Rsi(int period = 14)
     {
@@ -27,54 +27,62 @@ internal class Rsi
         {
             counter++;
             firstCloses.Enqueue(close);
-            if (firstCloses.Count == period + 2)
+            if (firstCloses.Count > period + 1)
             {
                 firstCloses.Dequeue();
-                (gain, loss) = AvgGainLoss(firstCloses);
             }
-            else
+            (gain, loss) = AvgGainLoss(firstCloses);
+        }
+        else
+        {
+            if (prev <= close)
             {
-                if (prev <= close)
-                {
-                    gain = (gain * (period - 1) + (close - prev)) / period;
-                    loss = (loss * (period - 1)) / period;
-                }
-                else if (prev > close)
-                {
-                    loss = (loss * (period - 1) + (prev - close)) / period;
-                    gain = (gain * (period - 1)) / period;
-                }
+                gain = (gain * (period - 1) + (close - prev)) / period;
+                loss = (loss * (period - 1)) / period;
+            }
+            else if (prev > close)
+            {
+                loss = (loss * (period - 1) + (prev - close)) / period;
+                gain = (gain * (period - 1)) / period;
             }
         }
 
         prev = close;
-        if (counter < period + 1)
-        {
-            return null;
-        }
-        return 100 - (100 / (1 + (gain / loss)));
+        float? res = counter < period + 1 ? null : 100F - (100F / (1 + (gain / loss)));
+        Last = res;
+        return res;
+    }
+
+    public void Reset()
+    {
+        Last = null;
+        firstCloses.Clear();
+        counter = 0;
+        prev = 0;
+        gain = 0;
+        loss = 0;
     }
 
     private (float, float) AvgGainLoss(Queue<float> closes)
     {
-        List<float> gain = new List<float>();
-        List<float> loss = new List<float>();
-        float prev = closes.Peek();
+        var gain = new List<float>();
+        var loss = new List<float>();
+        var prev = closes.Peek();
         if (closes.Count == 1)
         {
             return (0, 0);
         }
-        for (int i = 1; i < closes.Count; i++)
+        for (var i = 1; i < closes.Count; i++)
         {
-            float current = closes.ElementAt(i);
+            var current = closes.ElementAt(i);
             if (prev <= current)
             {
                 gain.Add(current - prev);
-                loss.Add(0);
+                loss.Add(0F);
             }
             else if (prev > current)
             {
-                gain.Add(0);
+                gain.Add(0F);
                 loss.Add(prev - current);
             }
             prev = current;

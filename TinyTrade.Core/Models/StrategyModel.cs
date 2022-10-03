@@ -5,7 +5,7 @@ namespace TinyTrade.Core.Models;
 [Serializable]
 public class StrategyModel
 {
-    [JsonProperty("name")]
+    [JsonProperty("strategy")]
     public string Name { get; init; } = null!;
 
     [JsonProperty("timeframe")]

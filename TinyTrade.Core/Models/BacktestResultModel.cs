@@ -28,9 +28,6 @@ public struct BacktestResultModel
     [JsonProperty("estimatedApy")]
     public float EstimatedApy { get; private set; }
 
-    [JsonProperty("averageResultPercentage")]
-    public float AverageResultPercentage { get; private set; }
-
     [JsonProperty("closedPositions")]
     public int ClosedPositions { get; private set; }
 
@@ -44,15 +41,14 @@ public struct BacktestResultModel
         InitialBalance = initialBalance;
         FinalBalance = finalBalance;
         Profit = FinalBalance - InitialBalance;
-        ProfitPercentage = FinalBalance / InitialBalance;
+        ProfitPercentage = 100F * ((FinalBalance / InitialBalance) - 1F);
         float won = positions.Count(p => p.IsWon);
         WinRate = positions.Count <= 0 ? 0 : won / positions.Count;
         float totPerc = 0;
-        positions.ForEach(p => totPerc += p.ResultPercentage);
+        positions.ForEach(p => totPerc += p.ResultRatio);
         totPerc = positions.Count <= 0 ? 0 : totPerc / positions.Count;
-        AverageResultPercentage = totPerc;
         ClosedPositions = positions.Count;
-        EstimatedApy = MathF.Pow(ProfitPercentage, 365F / Days) * 100;
+        EstimatedApy = (MathF.Pow(FinalBalance / InitialBalance, 365F / Days) - 1F) * 100;
         EstimatedApy = EstimatedApy < -100 ? -100 : EstimatedApy;
     }
 }
