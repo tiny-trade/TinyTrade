@@ -37,7 +37,7 @@ public abstract class AbstractStrategy : IStrategy
     public virtual void OnStop()
     { }
 
-    public void UpdateState(DataFrame frame)
+    public async Task UpdateState(DataFrame frame)
     {
         Exchange.Tick(frame);
         if (frame.IsClosed)
@@ -52,8 +52,11 @@ public abstract class AbstractStrategy : IStrategy
                 c.Tick(frame);
             }
 
-            var openPositions = Exchange.GetOpenPositionsNumber();
-            var balance = Exchange.GetAvailableBalance();
+            var posTask = Exchange.GetOpenPositionsNumberAsync();
+            var balanceTask = Exchange.GetAvailableBalanceAsync();
+            await Task.WhenAll(posTask, balanceTask);
+            var openPositions = posTask.Result;
+            var balance = balanceTask.Result;
             if (openPositions < MaxConcurrentPositions && balance > 0)
             {
                 var stake = balance * GetStakeAmount();
@@ -62,7 +65,7 @@ public abstract class AbstractStrategy : IStrategy
                 {
                     var side = OrderSide.Buy;
 
-                    Exchange.OpenPosition(side, frame.Close, GetStopLoss(side, frame), GetTakeProfit(side, frame), stake);
+                    await Exchange.OpenPositionAsync(side, frame.Close, GetStopLoss(side, frame), GetTakeProfit(side, frame), stake);
                     longConditions.ForEach(c => c.Reset());
                 }
 
@@ -70,7 +73,7 @@ public abstract class AbstractStrategy : IStrategy
                 {
                     var side = OrderSide.Sell;
 
-                    Exchange.OpenPosition(side, frame.Close, GetStopLoss(side, frame), GetTakeProfit(side, frame), stake);
+                    await Exchange.OpenPositionAsync(side, frame.Close, GetStopLoss(side, frame), GetTakeProfit(side, frame), stake);
                     shortConditions.ForEach(c => c.Reset());
                 }
             }

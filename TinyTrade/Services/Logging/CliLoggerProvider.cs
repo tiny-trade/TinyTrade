@@ -1,7 +1,7 @@
 ﻿using HandierCli;
 using Microsoft.Extensions.Logging;
 
-namespace TinyTrade.Logging;
+namespace TinyTrade.Services.Logging;
 
 [ProviderAlias("CliLog")]
 internal class CliLoggerProvider : ILoggerProvider

@@ -1,6 +1,6 @@
 ﻿namespace TinyTrade.Strategies.Link;
 
-public static class AssemblyLink
+public static class TinyTradeStrategiesAssembly
 {
     public static void DummyLink()
     {

@@ -56,7 +56,7 @@ internal class BacktestService
         strategy.OnStart();
         for (var i = 0; i < frames.Count; i++)
         {
-            strategy.UpdateState(frames[i]);
+            await strategy.UpdateState(frames[i]);
             bar.Report(i / (float)(frames.Count - 1));
         }
         strategy.OnStop();

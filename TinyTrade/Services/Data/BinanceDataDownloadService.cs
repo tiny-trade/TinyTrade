@@ -30,7 +30,7 @@ internal class BinanceDataDownloadService : IDataDownloadService
             await Parallel.ForEachAsync(periods, new ParallelOptions() { MaxDegreeOfParallelism = 8 }, async (p, token) =>
             {
                 var elem = p;
-                var fileName = $"{Paths.Cache}/{pair}-1m-{elem}.csv";
+                var fileName = $"{Paths.UserData}/{pair}-1m-{elem}.csv";
                 if (!File.Exists(fileName))
                 {
                     var archiveName = $"{Paths.Cache}/{pair}-{elem}.zip";
@@ -44,10 +44,7 @@ internal class BinanceDataDownloadService : IDataDownloadService
                 Interlocked.Increment(ref val);
                 progress?.Report(("Downloading data", (float)val / (periods.Count() - 1)));
             });
-        });
-        await Task.Run(() =>
-        {
-            var periods = interval.GetPeriods();
+
             for (var i = 0; i < archives.Count; i++)
             {
                 progress?.Report(("Extracting data", (float)i / (archives.Count - 1)));

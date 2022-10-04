@@ -3,6 +3,10 @@ using TinyTrade.Core.Constructs;
 
 namespace TinyTrade.Core.Exchanges.Backtest;
 
+/// <summary>
+///   Test exchange based on backtest data. It overrides the <see cref="IExchange"/> async methods in order to provide a faster processing:
+///   methods are treated as synchronous since there is no need for any endpoint call
+/// </summary>
 public class BacktestExchange : IExchange
 {
     private readonly ILogger logger;
@@ -27,6 +31,30 @@ public class BacktestExchange : IExchange
         availableBalance -= stake;
         var pos = new BacktestPosition(side, openPrice, takeProfit, stopLoss, stake);
         openPositions.Add(Guid.NewGuid(), pos);
+    }
+
+    async Task<float> IExchange.GetTotalBalanceAsync()
+    {
+        await Task.CompletedTask;
+        return GetTotalBalance();
+    }
+
+    async Task<float> IExchange.GetAvailableBalanceAsync()
+    {
+        await Task.CompletedTask;
+        return GetAvailableBalance();
+    }
+
+    async Task<int> IExchange.GetOpenPositionsNumberAsync()
+    {
+        await Task.CompletedTask;
+        return GetOpenPositionsNumber();
+    }
+
+    async Task IExchange.OpenPositionAsync(OrderSide side, float openPrice, float stopLoss, float takeProfit, float stake)
+    {
+        await Task.CompletedTask;
+        OpenPosition(side, openPrice, stopLoss, takeProfit, stake);
     }
 
     public void Tick(DataFrame dataFrame)

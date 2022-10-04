@@ -35,10 +35,10 @@ internal class CommandLineService : IHostedService
     private void RegisterCommands()
     {
         cli.Register(Command.Factory("help")
-         .InhibitHelp()
-         .Description("display the available commands")
-         .ArgumentsHandler(ArgumentsHandler.Factory())
-         .Add((handler) => logger.LogInformation("{p}", cli.Print())));
+             .InhibitHelp()
+             .Description("display the available commands")
+             .ArgumentsHandler(ArgumentsHandler.Factory())
+             .Add((handler) => logger.LogInformation("{p}", cli.Print())));
 
         cli.Register(Command.Factory("backtest")
             .Description("run a simulation on historical market data")
@@ -54,11 +54,12 @@ internal class CommandLineService : IHostedService
 
         cli.Register(Command.Factory("run")
             .Description("run a foretest simulation or a live trading session")
-            .ArgumentsHandler(ArgumentsHandler.Factory().Positional("strategy file").Positional("pair symbol").Flag("/d", "download data if not present"))
-            .Add(handler =>
+            .ArgumentsHandler(ArgumentsHandler.Factory().Positional("mode").Positional("strategy file").Positional("pair symbol"))
+            .AddAsync(async handler =>
             {
                 logger.LogDebug("Simulating running");
-                var service = services.GetRequiredService<RunService>();
+                var service = services.GetRequiredService<LiveService>();
+                await service.RunLive(handler.GetPositional(0), handler.GetPositional(1), handler.GetPositional(2));
             }));
 
         cli.Register(Command.Factory("snap")

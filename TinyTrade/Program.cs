@@ -2,10 +2,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TinyTrade.Logging;
 using TinyTrade.Services;
 using TinyTrade.Services.Data;
 using TinyTrade.Services.Hosted;
+using TinyTrade.Services.Logging;
 using TinyTrade.Strategies.Link;
 
 Console.Title = "TinyTrade";
@@ -24,7 +24,7 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton(provider => cli);
         services.AddSingleton<IDataDownloadService, BinanceDataDownloadService>();
         services.AddTransient<BacktestService>();
-        services.AddSingleton<RunService>();
+        services.AddSingleton<LiveService>();
         services.AddSingleton<SnapService>();
     })
     .ConfigureLogging(builder =>
@@ -38,7 +38,7 @@ var loggerProvider = host.Services.GetRequiredService<ILoggerProvider>();
 var logger = loggerProvider.CreateLogger(string.Empty);
 
 // DO NOT REMOVE THIS, necessary for preventing Visual Studio from stripping assemblies that are used solely through reflection
-AssemblyLink.DummyLink();
+TinyTradeStrategiesAssembly.DummyLink();
 logger.LogDebug("Strategies assembly linked");
 
 await host.RunAsync();

@@ -4,7 +4,7 @@ namespace TinyTrade.Core.Strategy;
 
 public interface IStrategy
 {
-    void UpdateState(DataFrame frame);
+    Task UpdateState(DataFrame frame);
 
     void OnStart();
 
