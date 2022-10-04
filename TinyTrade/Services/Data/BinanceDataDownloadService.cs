@@ -27,7 +27,7 @@ internal class BinanceDataDownloadService : IDataDownloadService
             var periods = interval.GetPeriods();
             var val = 0;
 
-            await Parallel.ForEachAsync(periods, new ParallelOptions() { MaxDegreeOfParallelism = 8 }, async (p, token) =>
+            await Parallel.ForEachAsync(periods, new ParallelOptions() { MaxDegreeOfParallelism = 16 }, async (p, token) =>
             {
                 var elem = p;
                 var fileName = $"{Paths.UserData}/{pair}-1m-{elem}.csv";

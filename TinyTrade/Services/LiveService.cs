@@ -1,11 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
 namespace TinyTrade.Services;
 
 internal class LiveService
 {
-    private const string LiveExecutable = "./TinyTrade.Live.exe";
+    private const string LiveExecutable = "TinyTrade.Live.exe";
     private readonly ILogger logger;
 
     public LiveService(ILoggerProvider loggerProvider)
@@ -15,26 +16,37 @@ internal class LiveService
 
     public async Task RunLive(string mode, string strategyFile, string pair)
     {
-        var process = new Process
+        var startInfo = new ProcessStartInfo
         {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = LiveExecutable,
-                Arguments = $"{mode} {strategyFile} {pair}",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true
-            }
+            FileName = LiveExecutable,
+            Arguments = $"{mode} {strategyFile} {pair}",
+            RedirectStandardOutput = true
         };
-        var res = process.Start();
-        if (res)
+
+        //DEBUG
+        //startInfo.UserName = null;
+        //startInfo.RedirectStandardOutput = false;
+        //startInfo.UseShellExecute = true;
+        //startInfo.WindowStyle = ProcessWindowStyle.Normal;
+
+        try
         {
-            logger.LogInformation("Launched live process [{pid}] in {m} mode with {s} on {p}", process.Id, mode, strategyFile, pair);
+            var res = Process.Start(startInfo);
+            if (res is not null)
+            {
+                res.EnableRaisingEvents = true;
+                logger.LogInformation("Launched live process [{pid}] in {m} mode with {s} on {p}", res.Id, mode, strategyFile, pair);
+            }
+            else
+            {
+                logger.LogError("Unable to launch process");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            logger.LogError("Unable to launch process");
+            logger.LogError("{e}", ex);
         }
+
         await Task.CompletedTask;
     }
 }

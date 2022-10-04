@@ -19,7 +19,8 @@ var host = Host.CreateDefaultBuilder(args)
     {
         services.Configure<ConsoleLifetimeOptions>(options => options.SuppressStatusMessages = true);
 
-        services.AddHostedService<CommandLineService>();
+        services.AddHostedService<CommandLineHostedService>();
+        services.AddHostedService<CleanupHostedService>();
 
         services.AddSingleton(provider => cli);
         services.AddSingleton<IDataDownloadService, BinanceDataDownloadService>();

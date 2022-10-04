@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="HandierCli" Version="1.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TinyTrade.Core\TinyTrade.Core.csproj" />
     <ProjectReference Include="..\TinyTrade.Strategies\TinyTrade.Strategies.csproj" />
   </ItemGroup>

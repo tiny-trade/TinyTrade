@@ -5,13 +5,13 @@ using Microsoft.Extensions.Logging;
 
 namespace TinyTrade.Services.Hosted;
 
-internal class CommandLineService : IHostedService
+internal class CommandLineHostedService : IHostedService
 {
     private readonly ILogger logger;
     private readonly CommandLine cli;
     private readonly IServiceProvider services;
 
-    public CommandLineService(IServiceProvider services, ILoggerProvider provider)
+    public CommandLineHostedService(IServiceProvider services, ILoggerProvider provider)
     {
         cli = services.GetRequiredService<CommandLine>();
         logger = provider.CreateLogger(string.Empty);
