@@ -1,4 +1,4 @@
-﻿using HandierCli;
+﻿using HandierCli.CLI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -11,7 +11,9 @@ using TinyTrade.Strategies.Link;
 Console.Title = "TinyTrade";
 Console.WriteLine("==========  TinyTrade ==========\n");
 var cli = CommandLine.Factory()
-        .OnUnrecognized((logger, cmd) => logger.LogError("{cmd} not recognized", cmd))
+        .OnUnrecognized((logger, cmd) => logger.Log($"{cmd} not recognized", ConsoleColor.DarkRed))
+        .RegisterHelpCommand()
+        .GlobalHelpSymbol("-h")
         .Build();
 
 var host = Host.CreateDefaultBuilder(args)

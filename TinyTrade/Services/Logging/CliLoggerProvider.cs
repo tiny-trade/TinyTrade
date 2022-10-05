@@ -1,4 +1,4 @@
-﻿using HandierCli;
+﻿using HandierCli.CLI;
 using Microsoft.Extensions.Logging;
 
 namespace TinyTrade.Services.Logging;
@@ -13,7 +13,7 @@ internal class CliLoggerProvider : ILoggerProvider
         this.cli = cli;
     }
 
-    public ILogger CreateLogger(string categoryName) => cli.Logger;
+    public ILogger CreateLogger(string categoryName) => cli.CliLogger;
 
     public void Dispose()
     {

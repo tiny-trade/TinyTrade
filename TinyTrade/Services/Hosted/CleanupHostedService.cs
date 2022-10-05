@@ -10,6 +10,7 @@ namespace TinyTrade.Services.Hosted;
 internal class CleanupHostedService : IHostedService
 {
     private readonly ILogger logger;
+    private readonly int secondsInterval = 5;
 
     public CleanupHostedService(ILoggerProvider loggerProvider)
     {
@@ -18,11 +19,22 @@ internal class CleanupHostedService : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        logger.LogTrace("Cleaning up zombie caches");
-        return CleanupZombieCaches();
+        // Launch a non-awaitable task that runs every secondsInterval seconds
+        Heartbeat(cancellationToken);
+        return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    private async void Heartbeat(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            //logger.LogTrace("Cleaning up zombie caches");
+            await CleanupZombieCaches();
+            await Task.Delay(secondsInterval * 1000, cancellationToken);
+        }
+    }
 
     private async Task CleanupZombieCaches()
     {

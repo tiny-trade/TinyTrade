@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
 namespace TinyTrade.Services;
@@ -16,6 +15,11 @@ internal class LiveService
 
     public async Task RunLive(string mode, string strategyFile, string pair)
     {
+        if (!File.Exists(strategyFile))
+        {
+            logger.LogError("Unable to locate strategy file {s}", strategyFile);
+            return;
+        }
         var startInfo = new ProcessStartInfo
         {
             FileName = LiveExecutable,
