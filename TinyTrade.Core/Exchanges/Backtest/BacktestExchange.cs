@@ -9,14 +9,14 @@ namespace TinyTrade.Core.Exchanges.Backtest;
 /// </summary>
 public class BacktestExchange : IExchange
 {
-    private readonly ILogger logger;
+    private readonly ILogger? logger;
     private readonly Dictionary<Guid, BacktestPosition> openPositions;
     private float balance;
     private float availableBalance;
 
     public List<BacktestPosition> ClosedPositions { get; private set; }
 
-    public BacktestExchange(ILogger logger, float balance)
+    public BacktestExchange(float balance, ILogger? logger = null)
     {
         openPositions = new Dictionary<Guid, BacktestPosition>();
         this.logger = logger;

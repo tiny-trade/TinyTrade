@@ -13,8 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="HandierCli" Version="1.2.1" />
-    <PackageReference Include="Kucoin.Net" Version="4.0.17" />
+    <PackageReference Include="HandierCli" Version="1.2.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
