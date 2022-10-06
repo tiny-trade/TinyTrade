@@ -9,7 +9,12 @@
       "fileName": "cmd.exe",
       "workingDirectory": ".",
       "arguments": "/c win-x64.bat"
+    },
+    "clean": {
+      "fileName": "cmd.exe",
+      "workingDirectory": ".",
+      "arguments": "/c clean.bat"
     }
   }
-
+, "-vs-binding":{"BeforeBuild":["clean"]}
 }
