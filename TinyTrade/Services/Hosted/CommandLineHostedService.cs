@@ -59,6 +59,7 @@ internal class CommandLineHostedService : IHostedService
                 .Mandatory("pair symbol", @"USDT$"))
             .AddAsync(async handler =>
             {
+
                 logger.LogDebug("Simulating running");
                 var service = services.GetRequiredService<LiveService>();
                 await service.RunLive(handler.GetPositional(0), handler.GetPositional(1), handler.GetPositional(2));
