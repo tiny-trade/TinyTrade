@@ -9,9 +9,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyTrade.Core", "TinyTrade
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyTrade.Live", "TinyTrade.Live\TinyTrade.Live.csproj", "{E48C4642-AB76-4BCF-9BA6-B2EA1E5F980F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyTrade.Indicators", "TinyTrade.Indicators\TinyTrade.Indicators.csproj", "{A5A1F464-7228-41FB-97A6-8021B59AEC41}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyTrade.Indicators", "TinyTrade.Indicators\TinyTrade.Indicators.csproj", "{A5A1F464-7228-41FB-97A6-8021B59AEC41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyTrade.Strategies", "TinyTrade.Strategies\TinyTrade.Strategies.csproj", "{D5B7D4D1-93D3-42C9-BA83-A416D12DB64F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyTrade.Strategies", "TinyTrade.Strategies\TinyTrade.Strategies.csproj", "{D5B7D4D1-93D3-42C9-BA83-A416D12DB64F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bundle", "Bundle", "{347725B0-95C1-4D97-B959-AA4DC4B108C3}"
+	ProjectSection(SolutionItems) = preProject
+		commands.json = commands.json
+		linux-x64.bat = linux-x64.bat
+		win-x64.bat = win-x64.bat
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,0 +1,15 @@
+{
+  "commands": {
+    "linux-x64": {
+      "fileName": "cmd.exe",
+      "workingDirectory": ".",
+      "arguments": "/c linux-x64.bat"
+    },
+    "win-x64": {
+      "fileName": "cmd.exe",
+      "workingDirectory": ".",
+      "arguments": "/c win-x64.bat"
+    }
+  }
+
+}

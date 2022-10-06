@@ -1,0 +1,1 @@
+dotnet publish -c Release -r win-x64 -f net6.0 --no-self-contained
