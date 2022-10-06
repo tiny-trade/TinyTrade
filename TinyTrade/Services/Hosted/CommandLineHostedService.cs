@@ -1,4 +1,6 @@
-﻿using HandierCli;
+﻿using HandierCli.CLI;
+using HandierCli.Progress;
+using HandierCli.Statics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -34,15 +36,12 @@ internal class CommandLineHostedService : IHostedService
 
     private void RegisterCommands()
     {
-        cli.Register(Command.Factory("help")
-             .InhibitHelp()
-             .Description("display the available commands")
-             .ArgumentsHandler(ArgumentsHandler.Factory())
-             .Add((handler) => logger.LogInformation("{p}", cli.Print())));
-
         cli.Register(Command.Factory("backtest")
             .Description("run a simulation on historical market data")
-            .ArgumentsHandler(ArgumentsHandler.Factory().Positional("strategy file").Positional("interval pattern").Positional("pair symbol"))
+            .WithArguments(ArgumentsHandler.Factory()
+                .Mandatory("strategy file", @".json$")
+                .Mandatory("interval pattern", @"20[1-2][0-9]-[0-1][0-9]|20[1-2][0-9]-[0-1][0-9]")
+                .Mandatory("pair symbol", @"USDT$"))
             .AddAsync(async handler =>
             {
                 var service = services.GetRequiredService<BacktestService>();
@@ -54,9 +53,13 @@ internal class CommandLineHostedService : IHostedService
 
         cli.Register(Command.Factory("run")
             .Description("run a foretest simulation or a live trading session")
-            .ArgumentsHandler(ArgumentsHandler.Factory().Positional("mode").Positional("strategy file").Positional("pair symbol"))
+            .WithArguments(ArgumentsHandler.Factory()
+                .Mandatory("mode", new string[] { "foretest", "live" })
+                .Mandatory("strategy file", @".json$")
+                .Mandatory("pair symbol", @"USDT$"))
             .AddAsync(async handler =>
             {
+
                 logger.LogDebug("Simulating running");
                 var service = services.GetRequiredService<LiveService>();
                 await service.RunLive(handler.GetPositional(0), handler.GetPositional(1), handler.GetPositional(2));
@@ -64,7 +67,7 @@ internal class CommandLineHostedService : IHostedService
 
         cli.Register(Command.Factory("snap")
             .Description("look for active foretest simulations or live sessions currently running")
-            .ArgumentsHandler(ArgumentsHandler.Factory())
+            .WithArguments(ArgumentsHandler.Factory())
             .Add(handler =>
             {
                 logger.LogDebug("Simulating snapping");
