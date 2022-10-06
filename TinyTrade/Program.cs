@@ -1,17 +1,19 @@
-﻿using HandierCli;
+﻿using HandierCli.CLI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TinyTrade.Logging;
 using TinyTrade.Services;
 using TinyTrade.Services.Data;
 using TinyTrade.Services.Hosted;
+using TinyTrade.Services.Logging;
 using TinyTrade.Strategies.Link;
 
 Console.Title = "TinyTrade";
 Console.WriteLine("==========  TinyTrade ==========\n");
 var cli = CommandLine.Factory()
-        .OnUnrecognized((logger, cmd) => logger.LogError("{cmd} not recognized", cmd))
+        .OnUnrecognized((logger, cmd) => logger.Log($"{cmd} not recognized", ConsoleColor.DarkRed))
+        .RegisterHelpCommand()
+        .GlobalHelpSymbol("-h")
         .Build();
 
 var host = Host.CreateDefaultBuilder(args)
@@ -19,12 +21,13 @@ var host = Host.CreateDefaultBuilder(args)
     {
         services.Configure<ConsoleLifetimeOptions>(options => options.SuppressStatusMessages = true);
 
-        services.AddHostedService<CommandLineService>();
+        services.AddHostedService<CommandLineHostedService>();
+        services.AddHostedService<CleanupHostedService>();
 
         services.AddSingleton(provider => cli);
         services.AddSingleton<IDataDownloadService, BinanceDataDownloadService>();
         services.AddTransient<BacktestService>();
-        services.AddSingleton<RunService>();
+        services.AddSingleton<LiveService>();
         services.AddSingleton<SnapService>();
     })
     .ConfigureLogging(builder =>
@@ -38,7 +41,7 @@ var loggerProvider = host.Services.GetRequiredService<ILoggerProvider>();
 var logger = loggerProvider.CreateLogger(string.Empty);
 
 // DO NOT REMOVE THIS, necessary for preventing Visual Studio from stripping assemblies that are used solely through reflection
-AssemblyLink.DummyLink();
+TinyTradeStrategiesAssembly.DummyLink();
 logger.LogDebug("Strategies assembly linked");
 
 await host.RunAsync();
