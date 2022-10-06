@@ -20,6 +20,7 @@ mono_crash.*
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
+[Bb]undle/
 [Rr]eleases/
 x64/
 x86/
@@ -70,6 +71,7 @@ StyleCopReport.xml
 
 # Files built by Visual Studio
 *_i.c
+*.zip
 *_p.c
 *_h.h
 *.ilk

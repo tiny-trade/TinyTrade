@@ -1,1 +1,3 @@
-dotnet publish -c Release -r win-x64 -f net6.0 --no-self-contained
+dotnet publish -c Release -r win-x64 -f net6.0 --no-self-contained -o bundle/release/win-x64
+echo Creating archive...
+tar.exe -a -c -f ./win-x64-bundle.zip -C bundle/release/win-x64 *
