@@ -1,29 +1,71 @@
-﻿using TinyTrade.Core.Constructs;
+﻿using CryptoExchange.Net.CommonObjects;
+using CryptoExchange.Net.Sockets;
+using Kucoin.Net.Clients;
+using Kucoin.Net.Enums;
+using Kucoin.Net.Objects.Models.Spot.Socket;
+using TinyTrade.Core.Constructs;
 
 namespace TinyTrade.Core.DataProviders;
 
 public class KucoinDataframeProvider : IDataframeProvider
 {
-    public KucoinDataframeProvider()
+    private readonly KucoinSocketClient client;
+    private readonly string symbol;
+    private readonly KlineInterval interval;
+    private readonly Queue<DataFrame> dataFrames;
+    private DataFrame? oldCandle;
+
+    public KucoinDataframeProvider(string symbol, Timeframe interval)
     {
+        int ind = symbol.IndexOf("USDT");
+        string token = symbol[..ind];
+        this.symbol = token + "-" + "USDT";
+        this.interval = IntervalConverter(interval);
+        client = new KucoinSocketClient();
+        dataFrames = new Queue<DataFrame>();
+        oldCandle = null;
     }
 
-    public Task Load()
+    public async Task Load() => _ = await client.SpotStreams.SubscribeToKlineUpdatesAsync(symbol, interval, Callback);
+
+    public async Task<DataFrame?> Next()
     {
-        // Load everything here. Subscribe to WebSockets if necessary and make REST calls if needed
-        return Task.CompletedTask;
+        while (dataFrames.Count <= 0)
+        {
+            await Task.Delay(200);
+        }
+        return dataFrames.Dequeue();
     }
 
-    public Task<DataFrame?> Next()
+    private static KlineInterval IntervalConverter(Timeframe timeframe)
     {
-        // Return the next available dataframe. Other services will wait here, so call can be blocking. For example, look at the
-        // BacktestDataframeProvider, how the logic is implemented. In that case the dataframes are all available at once, so the Next
-        // method simply iterates over them and returns them
-        // - New data is received
-        // - Convert it into Dataframe
-        // - Update the state and "unlock" this function
+        var k = (KlineInterval)(timeframe.Minutes * 60);
+        if (!Enum.IsDefined(typeof(KlineInterval), k))
+        {
+            k = KlineInterval.FiveMinutes;
+        }
+        return k;
+    }
 
-        // This is just for compile purposes
-        return new Task<DataFrame?>(() => null);
+    private void Callback(DataEvent<KucoinStreamCandle> obj)
+    {
+        var openTime = (ulong)new DateTimeOffset(obj.Data.Candles.OpenTime).ToUnixTimeSeconds();
+        var open = (float)obj.Data.Candles.OpenPrice;
+        var high = (float)obj.Data.Candles.HighPrice;
+        var low = (float)obj.Data.Candles.LowPrice;
+        var close = (float)obj.Data.Candles.ClosePrice;
+        var volume = (float)obj.Data.Candles.Volume;
+        var closeTime = (ulong)openTime + (ulong)interval;
+
+        if (oldCandle is not null)
+        {
+            if (openTime != oldCandle.OpenTime)
+            {
+                oldCandle.IsClosed = true;
+            }
+            dataFrames.Enqueue(oldCandle);
+        }
+
+        oldCandle = new DataFrame(openTime, open, high, low, close, volume, closeTime, false);
     }
 }

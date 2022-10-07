@@ -26,7 +26,7 @@ internal class BacktestService
     public async Task RunBacktest(string pair, TimeInterval interval, string strategyFile)
     {
         float initialBalance = 100;
-        var exchange = new BacktestExchange(logger, initialBalance);
+        var exchange = new BacktestExchange(initialBalance, logger);
         var strategyModel = JsonConvert.DeserializeObject<StrategyModel>(File.ReadAllText(strategyFile));
         if (strategyModel is null)
         {

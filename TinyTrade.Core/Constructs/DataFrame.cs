@@ -1,6 +1,6 @@
 ﻿namespace TinyTrade.Core.Constructs;
 
-public struct DataFrame
+public class DataFrame
 {
     public float Open { get; init; }
 
@@ -16,7 +16,7 @@ public struct DataFrame
 
     public ulong CloseTime { get; init; }
 
-    public bool IsClosed { get; init; }
+    public bool IsClosed { get; set; }
 
     public DataFrame(ulong openTime, float open, float high, float low, float close, float volume, ulong closeTime, bool isClosed)
     {
