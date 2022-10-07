@@ -16,5 +16,5 @@
       "arguments": "/c clean.bat"
     }
   }
-, "-vs-binding":{"BeforeBuild":["clean"]}
+
 }

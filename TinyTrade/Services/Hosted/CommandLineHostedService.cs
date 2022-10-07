@@ -4,6 +4,7 @@ using HandierCli.Statics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TinyTrade.Core.Constructs;
 
 namespace TinyTrade.Services.Hosted;
 
@@ -41,14 +42,14 @@ internal class CommandLineHostedService : IHostedService
             .WithArguments(ArgumentsHandler.Factory()
                 .Mandatory("strategy file", @".json$")
                 .Mandatory("interval pattern", @"20[1-2][0-9]-[0-1][0-9]|20[1-2][0-9]-[0-1][0-9]")
-                .Mandatory("pair symbol", @"USDT$"))
+                .Mandatory("pair symbol", @"[A-Z]+-USDT$"))
             .AddAsync(async handler =>
             {
                 var service = services.GetRequiredService<BacktestService>();
                 var intervalPattern = handler.GetPositional(1);
                 var pair = handler.GetPositional(2);
                 var strategyFile = handler.GetPositional(0);
-                await service.RunBacktest(pair, intervalPattern, strategyFile);
+                await service.RunBacktest(Pair.Parse(pair), intervalPattern, strategyFile);
             }));
 
         cli.Register(Command.Factory("run")
@@ -59,7 +60,6 @@ internal class CommandLineHostedService : IHostedService
                 .Mandatory("pair symbol", @"USDT$"))
             .AddAsync(async handler =>
             {
-
                 logger.LogDebug("Simulating running");
                 var service = services.GetRequiredService<LiveService>();
                 await service.RunLive(handler.GetPositional(0), handler.GetPositional(1), handler.GetPositional(2));

@@ -1,4 +1,6 @@
-﻿namespace TinyTrade.Core.Constructs;
+﻿using Newtonsoft.Json;
+
+namespace TinyTrade.Core.Constructs;
 
 public class DataFrame
 {
@@ -29,4 +31,6 @@ public class DataFrame
         CloseTime = closeTime;
         IsClosed = isClosed;
     }
+
+    public override string? ToString() => JsonConvert.SerializeObject(this, Formatting.Indented);
 }

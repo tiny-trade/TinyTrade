@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TinyTrade.Services;
-using TinyTrade.Services.Data;
 using TinyTrade.Services.Hosted;
 using TinyTrade.Services.Logging;
 using TinyTrade.Strategies.Link;
@@ -25,7 +24,6 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddHostedService<CleanupHostedService>();
 
         services.AddSingleton(provider => cli);
-        services.AddSingleton<IDataDownloadService, BinanceDataDownloadService>();
         services.AddTransient<BacktestService>();
         services.AddSingleton<LiveService>();
         services.AddSingleton<SnapService>();

@@ -11,17 +11,21 @@ public struct Timeframe
     [JsonProperty("minutes")]
     public int Minutes { get; init; }
 
-    public Timeframe(int minutes)
+    private Timeframe(int minutes)
     {
         Minutes = minutes;
         Flag = MinutesToFlag(minutes);
     }
 
-    public Timeframe(string flag)
+    private Timeframe(string flag)
     {
         Flag = flag;
         Minutes = FlagToMinutes(flag);
     }
+
+    public static Timeframe FromMinutes(int minutes) => new Timeframe(minutes);
+
+    public static Timeframe FromFlag(string flag) => new Timeframe(flag);
 
     public static implicit operator string(Timeframe timeframe) => timeframe.Flag;
 
