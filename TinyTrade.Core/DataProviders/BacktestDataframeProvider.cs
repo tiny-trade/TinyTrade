@@ -1,29 +1,49 @@
 ﻿using Microsoft.VisualBasic.FileIO;
 using System.Globalization;
+using System.IO.Compression;
 using TinyTrade.Core.Constructs;
+using TinyTrade.Core.Statics;
 using TinyTrade.Statics;
 
 namespace TinyTrade.Core.DataProviders;
 
 public class BacktestDataframeProvider : IDataframeProvider
 {
+    // Currently using Binance for backtest data
+    private const string BaseUrl = "https://data.binance.vision/data/spot/monthly/klines";
     private readonly TimeInterval interval;
-    private readonly string pair;
+    private readonly Pair pair;
     private readonly int granularity;
+    private readonly HttpClient httpClient;
     private List<DataFrame> frames;
     private int currentIndex = 0;
 
     public int FramesCount => frames.Count;
 
-    public BacktestDataframeProvider(TimeInterval interval, string pair, int granularity)
+    internal BacktestDataframeProvider(TimeInterval interval, Pair pair, int granularity)
     {
         this.interval = interval;
         this.pair = pair;
         this.granularity = granularity;
         frames = new List<DataFrame>();
+        httpClient = new HttpClient();
     }
 
-    public async Task Load() => frames = await BuildDataFrames();
+    public async Task Load(IProgress<IDataframeProvider.LoadProgress>? progress = null)
+    {
+        IDataframeProvider.LoadProgress prog = new IDataframeProvider.LoadProgress
+        {
+            Description = "Downloading data"
+        };
+        var valueProgress = new Progress<float>(v =>
+        {
+            prog.Progress = v;
+            progress?.Report(prog);
+        });
+        await DownloadData(valueProgress);
+        prog.Description = "Building dataframes";
+        frames = await BuildDataFrames(valueProgress);
+    }
 
     public async Task<DataFrame?> Next()
     {
@@ -31,7 +51,47 @@ public class BacktestDataframeProvider : IDataframeProvider
         return currentIndex >= frames.Count ? null : frames[currentIndex++];
     }
 
-    private async Task<List<DataFrame>> BuildDataFrames()
+    private string GenerateUrlForSingle(Pair pair, string monthDate) => $"{BaseUrl}/{pair.ForBinance()}/1m/{pair.ForBinance()}-1m-{monthDate}.zip";
+
+    private async Task DownloadData(IProgress<float>? progress = null)
+    {
+        if (!Directory.Exists(Paths.Cache))
+        {
+            Directory.CreateDirectory(Paths.Cache);
+        }
+        var archives = new List<string>();
+        await Task.Run(async () =>
+        {
+            var periods = interval.GetPeriods();
+            var val = 0;
+
+            await Parallel.ForEachAsync(periods, new ParallelOptions() { MaxDegreeOfParallelism = 16 }, async (p, token) =>
+            {
+                var elem = p;
+                var fileName = $"{Paths.UserData}/{pair.ForBinance()}-1m-{elem}.csv";
+                if (!File.Exists(fileName))
+                {
+                    var archiveName = $"{Paths.Cache}/{pair}-{elem}.zip";
+                    if (!File.Exists(archiveName))
+                    {
+                        var url = GenerateUrlForSingle(pair, elem);
+                        await httpClient.DownloadFile(url, archiveName);
+                    }
+                    archives.Add(archiveName);
+                }
+                Interlocked.Increment(ref val);
+                progress?.Report((float)val / (periods.Count() - 1));
+            });
+
+            for (var i = 0; i < archives.Count; i++)
+            {
+                progress?.Report((float)i / (archives.Count - 1));
+                ZipFile.ExtractToDirectory(archives[i], Paths.UserData, true);
+            }
+        });
+    }
+
+    private async Task<List<DataFrame>> BuildDataFrames(IProgress<float>? progress = null)
     {
         var frames = new List<DataFrame>();
         await Task.Run(() =>
@@ -43,10 +103,11 @@ public class BacktestDataframeProvider : IDataframeProvider
             float moduleL = 0;
             float moduleV = 0;
 
-            var prefix = $"{Paths.UserData}/{pair}-1m-";
+            var prefix = $"{Paths.UserData}/{pair.ForBinance()}-1m-";
             var periods = interval.GetPeriods();
-            foreach (var p in periods)
+            for (int i = 0; i < periods.Count(); i++)
             {
+                var p = periods.ElementAt(i);
                 var path = prefix + p + ".csv";
                 if (!File.Exists(path)) continue;
                 using var csvParser = new TextFieldParser(path);
@@ -94,8 +155,10 @@ public class BacktestDataframeProvider : IDataframeProvider
                         frames.Add(frame);
                     }
                 }
+                progress?.Report((float)(i + 1) / periods.Count());
             }
         });
+
         return frames;
     }
 }

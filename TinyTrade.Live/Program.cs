@@ -2,25 +2,23 @@
 
 using HandierCli.CLI;
 using HandierCli.Log;
-using Kucoin.Net.Enums;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using TinyTrade.Core.Constructs;
-using TinyTrade.Core.DataProviders;
-using TinyTrade.Core.Exchanges.Backtest;
+using TinyTrade.Core.Exchanges;
 using TinyTrade.Core.Models;
 using TinyTrade.Core.Statics;
 using TinyTrade.Core.Strategy;
+using TinyTrade.Live.Modes;
 using TinyTrade.Statics;
 using TinyTrade.Strategies.Link;
 
 TinyTradeStrategiesAssembly.DummyLink();
-
 // Create the args handler for matching arguments
 var handler = ArgumentsHandler.Factory()
                 .Mandatory("mode", new string[] { "foretest", "live" })
                 .Mandatory("strategy file", @".json$")
-                .Mandatory("pair symbol", @"USDT$").Build();
+                .Mandatory("pair symbol", @"[A-Z]+-USDT$").Build();
 
 var logger = new AdvancedLogger();
 
@@ -60,7 +58,7 @@ File.WriteAllText(path, serialized);
 if (mode == "foretest")
 {
     float initialBalance = 100;
-    var exchange = new BacktestExchange(initialBalance, logger);
+    var exchange = ExchangeFactory.GetLocalTestExchange(initialBalance, logger);
     var cParams = new StrategyConstructorParameters(strategyModel.Parameters, strategyModel.Genotype, logger, exchange);
     if (!StrategyResolver.TryResolveStrategy(strategyModel.Name, cParams, out var strategy))
     {
@@ -68,19 +66,23 @@ if (mode == "foretest")
         return;
     }
     logger.Log(LogLevel.Debug, "Resolved strategy {s}", strategy);
-    var provider = new KucoinDataframeProvider(pair, new Timeframe(strategyModel.Timeframe));
-    await provider.Load();
-    strategy.OnStart();
-    DataFrame? frame;
-    while ((frame = await provider.Next()) is not null)
+
+    var testRun = new ForetestRun(Pair.Parse(pair), Timeframe.FromFlag(strategyModel.Timeframe), strategy, exchange, logger);
+    await testRun.RunAsync((int)strategyModel.Genotype.MaxBy(p => p.Value).Value);
+}
+else if (mode == "live")
+{
+    logger.LogWarning("Live trading mode is not implemented yet X(");
+    if (handler.TryGetKeyed("-e", out var exchangeString))
     {
-        await strategy.UpdateState((DataFrame)frame);
-        if (frame.IsClosed == true)
+        Exchange ex;
+        try
         {
-            logger.Log(LogLevel.Information, "total balance :{b}", exchange.GetTotalBalance());
+            ex = (Exchange)Enum.Parse(typeof(Exchange), exchangeString, true);
+        }
+        catch (Exception)
+        {
         }
     }
-    strategy.OnStop();
+    // TODO instantiate exchange and run live
 }
-
-return;

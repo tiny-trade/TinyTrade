@@ -27,11 +27,11 @@ internal class LiveService
             RedirectStandardOutput = true
         };
 
-        //DEBUG
-        //startInfo.UserName = null;
-        //startInfo.RedirectStandardOutput = false;
-        //startInfo.UseShellExecute = true;
-        //startInfo.WindowStyle = ProcessWindowStyle.Normal;
+        //DEBUG uncomment to launch the process in a visible new cmd window
+        startInfo.UserName = null;
+        startInfo.RedirectStandardOutput = false;
+        startInfo.UseShellExecute = true;
+        startInfo.WindowStyle = ProcessWindowStyle.Normal;
 
         try
         {

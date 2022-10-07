@@ -7,7 +7,7 @@ namespace TinyTrade.Core.Exchanges.Backtest;
 ///   Test exchange based on backtest data. It overrides the <see cref="IExchange"/> async methods in order to provide a faster processing:
 ///   methods are treated as synchronous since there is no need for any endpoint call
 /// </summary>
-public class BacktestExchange : IExchange
+public class LocalTestExchange : IExchange
 {
     private readonly ILogger? logger;
     private readonly Dictionary<Guid, BacktestPosition> openPositions;
@@ -16,7 +16,7 @@ public class BacktestExchange : IExchange
 
     public List<BacktestPosition> ClosedPositions { get; private set; }
 
-    public BacktestExchange(float balance, ILogger? logger = null)
+    internal LocalTestExchange(float balance, ILogger? logger = null)
     {
         openPositions = new Dictionary<Guid, BacktestPosition>();
         this.logger = logger;

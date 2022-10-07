@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TinyTrade.Live": {
+      "commandName": "Project",
+      "commandLineArgs": "foretest \"C:\\Users\\bltmt\\Desktop\\TinyTrade\\simple.json\" BNBUSDT"
+    }
+  }
+}

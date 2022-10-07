@@ -4,29 +4,27 @@ using Newtonsoft.Json;
 using System.Diagnostics;
 using TinyTrade.Core.Constructs;
 using TinyTrade.Core.DataProviders;
+using TinyTrade.Core.Exchanges;
 using TinyTrade.Core.Exchanges.Backtest;
 using TinyTrade.Core.Models;
 using TinyTrade.Core.Statics;
 using TinyTrade.Core.Strategy;
-using TinyTrade.Services.Data;
 
 namespace TinyTrade.Services;
 
 internal class BacktestService
 {
     private readonly ILogger logger;
-    private readonly IDataDownloadService downloadService;
 
-    public BacktestService(ILoggerProvider provider, IDataDownloadService downloadService)
+    public BacktestService(ILoggerProvider provider)
     {
         logger = provider.CreateLogger(string.Empty);
-        this.downloadService = downloadService;
     }
 
-    public async Task RunBacktest(string pair, TimeInterval interval, string strategyFile)
+    public async Task RunBacktest(Pair pair, TimeInterval interval, string strategyFile)
     {
         float initialBalance = 100;
-        var exchange = new BacktestExchange(initialBalance, logger);
+        var exchange = ExchangeFactory.GetLocalTestExchange(initialBalance, logger);
         var strategyModel = JsonConvert.DeserializeObject<StrategyModel>(File.ReadAllText(strategyFile));
         if (strategyModel is null)
         {
@@ -40,20 +38,17 @@ internal class BacktestService
             return;
         }
         logger.LogDebug("Resolved strategy {s}", strategy);
-        var provider = new BacktestDataframeProvider(interval, pair, Timeframe.FlagToMinutes(strategyModel.Timeframe));
+        var provider = DataframeProviderFactory.GetBacktestDataframeProvider(interval, pair, Timeframe.FlagToMinutes(strategyModel.Timeframe));
         var bar = ConsoleProgressBar.Factory().Lenght(20).Build();
-        var progress = new Progress<(string, float)>(p => bar.Report(p.Item2, p.Item1));
-        await downloadService.DownloadData(pair, interval, progress);
+        var progress = new Progress<IDataframeProvider.LoadProgress>(p => bar.Report(p.Progress, p.Description));
+        await provider.Load(progress);
         bar.Dispose();
-        var spinner = ConsoleSpinner.Factory().Info("Loading data ").Frames(12, "-   ", "--  ", "--- ", "----", " ---", "  --", "   -", "    ");
-        await spinner.Build().Await(provider.Load());
 
-        spinner.Info("Evaluating ");
-
+        var spinner = ConsoleSpinner.Factory().Info("Evaluating ").Frames(12, "-   ", "--  ", "--- ", "----", " ---", "  --", "   -", "    ").Build();
         var watch = new Stopwatch();
         watch.Start();
         strategy.OnStart();
-        await spinner.Build().Await(Task.Run(async () =>
+        await spinner.Await(Task.Run(async () =>
         {
             DataFrame? frame;
             while ((frame = await provider.Next()) is not null)
@@ -66,11 +61,11 @@ internal class BacktestService
         watch.Stop();
 
         var millis = watch.ElapsedMilliseconds;
-        if (exchange is BacktestExchange testExchange)
+        if (exchange is LocalTestExchange testExchange)
         {
             var result = new BacktestResultModel(
                 testExchange.ClosedPositions,
-                new Timeframe(strategyModel.Timeframe),
+                Timeframe.FromFlag(strategyModel.Timeframe),
                 initialBalance,
                 testExchange.GetTotalBalance(),
                 provider.FramesCount);
