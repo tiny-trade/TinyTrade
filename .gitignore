@@ -17,9 +17,12 @@
 mono_crash.*
 
 # Build results
+win-x64-bundle/
+linux-x64-bundle/
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
+[Bb]undle/
 [Rr]eleases/
 x64/
 x86/
@@ -70,6 +73,7 @@ StyleCopReport.xml
 
 # Files built by Visual Studio
 *_i.c
+*.zip
 *_p.c
 *_h.h
 *.ilk
