@@ -59,7 +59,7 @@ if (mode == "foretest")
 {
     float initialBalance = 100;
     var exchange = ExchangeFactory.GetLocalTestExchange(initialBalance, logger);
-    var cParams = new StrategyConstructorParameters(strategyModel.Parameters, strategyModel.Genotype, logger, exchange);
+    var cParams = new StrategyConstructorParameters(strategyModel.Parameters, strategyModel.Traits, logger, exchange);
     if (!StrategyResolver.TryResolveStrategy(strategyModel.Name, cParams, out var strategy))
     {
         logger.Log(LogLevel.Error, "Unable to instiantiate {s} strategy", strategyModel.Name);
@@ -68,7 +68,9 @@ if (mode == "foretest")
     logger.Log(LogLevel.Debug, "Resolved strategy {s}", strategy);
 
     var testRun = new ForetestRun(Pair.Parse(pair), Timeframe.FromFlag(strategyModel.Timeframe), strategy, exchange, logger);
-    await testRun.RunAsync((int)strategyModel.Genotype.MaxBy(p => p.Value).Value);
+
+    var gene = strategyModel.Traits.MaxBy(p => p.Value);
+    await testRun.RunAsync(gene is null ? 0 : (int)gene.Value);
 }
 else if (mode == "live")
 {

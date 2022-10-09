@@ -25,7 +25,8 @@ var host = Host.CreateDefaultBuilder(args)
 
         services.AddSingleton(provider => cli);
         services.AddTransient<BacktestService>();
-        services.AddSingleton<LiveService>();
+        services.AddTransient<OptimizeService>();
+        services.AddSingleton<RunService>();
         services.AddSingleton<SnapService>();
     })
     .ConfigureLogging(builder =>

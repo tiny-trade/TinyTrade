@@ -12,19 +12,26 @@ public class BacktestDataframeProvider : IDataframeProvider
     // Currently using Binance for backtest data
     private const string BaseUrl = "https://data.binance.vision/data/spot/monthly/klines";
     private readonly TimeInterval interval;
-    private readonly Pair pair;
     private readonly int granularity;
+
     private readonly HttpClient httpClient;
+
     private List<DataFrame> frames;
+
     private int currentIndex = 0;
 
     public int FramesCount => frames.Count;
 
-    internal BacktestDataframeProvider(TimeInterval interval, Pair pair, int granularity)
+    public Timeframe Timeframe { get; private set; }
+
+    public Pair Pair { get; private set; }
+
+    public BacktestDataframeProvider(TimeInterval interval, Pair pair, Timeframe timeframe)
     {
         this.interval = interval;
-        this.pair = pair;
-        this.granularity = granularity;
+        Pair = pair;
+        Timeframe = timeframe;
+        granularity = timeframe;
         frames = new List<DataFrame>();
         httpClient = new HttpClient();
     }
@@ -44,6 +51,8 @@ public class BacktestDataframeProvider : IDataframeProvider
         prog.Description = "Building dataframes";
         frames = await BuildDataFrames(valueProgress);
     }
+
+    public void Reset() => currentIndex = 0;
 
     public async Task<DataFrame?> Next()
     {
@@ -68,13 +77,13 @@ public class BacktestDataframeProvider : IDataframeProvider
             await Parallel.ForEachAsync(periods, new ParallelOptions() { MaxDegreeOfParallelism = 16 }, async (p, token) =>
             {
                 var elem = p;
-                var fileName = $"{Paths.UserData}/{pair.ForBinance()}-1m-{elem}.csv";
+                var fileName = $"{Paths.UserData}/{Pair.ForBinance()}-1m-{elem}.csv";
                 if (!File.Exists(fileName))
                 {
-                    var archiveName = $"{Paths.Cache}/{pair}-{elem}.zip";
+                    var archiveName = $"{Paths.Cache}/{Pair}-{elem}.zip";
                     if (!File.Exists(archiveName))
                     {
-                        var url = GenerateUrlForSingle(pair, elem);
+                        var url = GenerateUrlForSingle(Pair, elem);
                         await httpClient.DownloadFile(url, archiveName);
                     }
                     archives.Add(archiveName);
@@ -103,7 +112,7 @@ public class BacktestDataframeProvider : IDataframeProvider
             float moduleL = 0;
             float moduleV = 0;
 
-            var prefix = $"{Paths.UserData}/{pair.ForBinance()}-1m-";
+            var prefix = $"{Paths.UserData}/{Pair.ForBinance()}-1m-";
             var periods = interval.GetPeriods();
             for (int i = 0; i < periods.Count(); i++)
             {

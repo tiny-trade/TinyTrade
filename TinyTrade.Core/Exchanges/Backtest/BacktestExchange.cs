@@ -14,15 +14,25 @@ public class LocalTestExchange : IExchange
     private float balance;
     private float availableBalance;
 
+    public float InitialBalance { get; private set; }
+
     public List<BacktestPosition> ClosedPositions { get; private set; }
 
-    internal LocalTestExchange(float balance, ILogger? logger = null)
+    public LocalTestExchange(float balance, ILogger? logger = null)
     {
         openPositions = new Dictionary<Guid, BacktestPosition>();
         this.logger = logger;
         this.balance = balance;
         availableBalance = balance;
+        InitialBalance = balance;
         ClosedPositions = new List<BacktestPosition>();
+    }
+
+    public void Reset()
+    {
+        balance = InitialBalance;
+        availableBalance = InitialBalance;
+        openPositions.Clear();
     }
 
     public void OpenPosition(OrderSide side, float openPrice, float stopLoss, float takeProfit, float stake)

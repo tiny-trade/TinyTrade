@@ -12,7 +12,7 @@ public abstract class AbstractStrategy : IStrategy
 
     public int MaxConcurrentPositions { get; init; }
 
-    protected ILogger Logger { get; private set; }
+    protected ILogger? Logger { get; private set; }
 
     protected IExchange Exchange { get; private set; }
 

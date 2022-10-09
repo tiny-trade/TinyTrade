@@ -4,12 +4,12 @@ using System.Runtime.InteropServices;
 
 namespace TinyTrade.Services;
 
-internal class LiveService
+internal class RunService
 {
     private const string LiveExecutable = "TinyTrade.Live";
     private readonly ILogger logger;
 
-    public LiveService(ILoggerProvider loggerProvider)
+    public RunService(ILoggerProvider loggerProvider)
     {
         logger = loggerProvider.CreateLogger(string.Empty);
     }

@@ -1,4 +1,5 @@
 ﻿using Kucoin.Net.Enums;
+using TinyTrade.Core.Constructs;
 
 namespace TinyTrade.Core.Statics;
 
@@ -15,6 +16,12 @@ public static class Extensions
             return true;
         }
         return false;
+    }
+
+    public static T TraitValueOrDefault<T>(this List<StrategyTrait> genes, string key, T defaultVal) where T : notnull
+    {
+        var g = genes.FirstOrDefault(g => g.Key.Equals(key));
+        return g is not null ? (T)Convert.ChangeType(g.Value, typeof(T)) : defaultVal;
     }
 
     public static FuturesKlineInterval ToFuturesInterval(this KlineInterval interval)
