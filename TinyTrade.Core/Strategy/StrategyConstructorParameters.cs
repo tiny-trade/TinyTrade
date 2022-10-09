@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using TinyTrade.Core.Constructs;
 using TinyTrade.Core.Exchanges;
 
 namespace TinyTrade.Core.Strategy;
@@ -7,16 +8,16 @@ public struct StrategyConstructorParameters
 {
     public Dictionary<string, object> Parameters { get; init; }
 
-    public Dictionary<string, float> Genotype { get; init; }
+    public List<StrategyTrait> Traits { get; init; }
 
-    public ILogger Logger { get; init; }
+    public ILogger? Logger { get; init; }
 
     public IExchange Exchange { get; init; }
 
-    public StrategyConstructorParameters(Dictionary<string, object> parameters, Dictionary<string, float> genotype, ILogger logger, IExchange exchange)
+    public StrategyConstructorParameters(Dictionary<string, object> parameters, List<StrategyTrait> genotype, ILogger? logger, IExchange exchange)
     {
         Parameters = parameters;
-        Genotype = genotype;
+        Traits = genotype;
         Logger = logger;
         Exchange = exchange;
     }

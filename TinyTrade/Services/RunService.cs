@@ -1,14 +1,15 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace TinyTrade.Services;
 
-internal class LiveService
+internal class RunService
 {
-    private const string LiveExecutable = "TinyTrade.Live.exe";
+    private const string LiveExecutable = "TinyTrade.Live";
     private readonly ILogger logger;
 
-    public LiveService(ILoggerProvider loggerProvider)
+    public RunService(ILoggerProvider loggerProvider)
     {
         logger = loggerProvider.CreateLogger(string.Empty);
     }
@@ -22,20 +23,21 @@ internal class LiveService
         }
         var startInfo = new ProcessStartInfo
         {
-            FileName = LiveExecutable,
+            FileName = LiveExecutable + GetOsSuffix(),
             Arguments = $"{mode} {strategyFile} {pair}",
-            RedirectStandardOutput = true
+            RedirectStandardOutput = true,
+            UserName = null,
         };
-
-        //DEBUG uncomment to launch the process in a visible new cmd window
-        startInfo.UserName = null;
         startInfo.RedirectStandardOutput = false;
         startInfo.UseShellExecute = true;
-        startInfo.WindowStyle = ProcessWindowStyle.Normal;
+        startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+        //DEBUG
+        //startInfo.WindowStyle = ProcessWindowStyle.Normal;
 
         try
         {
             var res = Process.Start(startInfo);
+
             if (res is not null)
             {
                 res.EnableRaisingEvents = true;
@@ -53,4 +55,6 @@ internal class LiveService
 
         await Task.CompletedTask;
     }
+
+    private string GetOsSuffix() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;
 }

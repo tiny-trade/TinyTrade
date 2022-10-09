@@ -14,7 +14,11 @@
       "fileName": "cmd.exe",
       "workingDirectory": ".",
       "arguments": "/c clean.bat"
+    },
+    "linux-arm64": {
+      "fileName": "cmd.exe",
+      "workingDirectory": ".",
+      "arguments": "/c linux-arm64.bat"
     }
   }
-
 }

@@ -4,7 +4,9 @@ using HandierCli.Statics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using TinyTrade.Core.Constructs;
+using TinyTrade.Core.Models;
 
 namespace TinyTrade.Services.Hosted;
 
@@ -46,10 +48,16 @@ internal class CommandLineHostedService : IHostedService
             .AddAsync(async handler =>
             {
                 var service = services.GetRequiredService<BacktestService>();
+                var strategyFile = handler.GetPositional(0);
                 var intervalPattern = handler.GetPositional(1);
                 var pair = handler.GetPositional(2);
-                var strategyFile = handler.GetPositional(0);
-                await service.RunBacktest(Pair.Parse(pair), intervalPattern, strategyFile);
+                var strategyModel = JsonConvert.DeserializeObject<OptimizableStrategyModel>(File.ReadAllText(strategyFile));
+                if (strategyModel is null)
+                {
+                    logger.LogError("Unable to deserialize {s} file", strategyFile);
+                    return;
+                }
+                var result = await service.RunBacktest(Pair.Parse(pair), intervalPattern, strategyModel);
             }));
 
         cli.Register(Command.Factory("run")
@@ -61,7 +69,7 @@ internal class CommandLineHostedService : IHostedService
             .AddAsync(async handler =>
             {
                 logger.LogDebug("Simulating running");
-                var service = services.GetRequiredService<LiveService>();
+                var service = services.GetRequiredService<RunService>();
                 await service.RunLive(handler.GetPositional(0), handler.GetPositional(1), handler.GetPositional(2));
             }));
 
@@ -74,5 +82,26 @@ internal class CommandLineHostedService : IHostedService
                 var service = services.GetRequiredService<SnapService>();
                 service.Snapshot();
             }));
+
+        cli.Register(Command.Factory("optimize")
+           .Description("optimize strategies")
+           .WithArguments(ArgumentsHandler.Factory()
+                .Mandatory("strategy file", @".json$")
+                .Mandatory("interval pattern", @"20[1-2][0-9]-[0-1][0-9]|20[1-2][0-9]-[0-1][0-9]")
+                .Mandatory("pair symbol", @"[A-Z]+-USDT$"))
+           .AddAsync(async handler =>
+           {
+               var service = services.GetRequiredService<OptimizeService>();
+               var strategyFile = handler.GetPositional(0);
+               var intervalPattern = handler.GetPositional(1);
+               var pair = handler.GetPositional(2);
+               var strategyModel = JsonConvert.DeserializeObject<OptimizableStrategyModel>(File.ReadAllText(strategyFile));
+               if (strategyModel is null)
+               {
+                   logger.LogError("Unable to deserialize {s} file", strategyFile);
+                   return;
+               }
+               await service.Optimize(Pair.Parse(pair), intervalPattern, strategyModel);
+           }));
     }
 }

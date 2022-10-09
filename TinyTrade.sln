@@ -15,8 +15,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyTrade.Strategies", "Tin
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bundle", "Bundle", "{347725B0-95C1-4D97-B959-AA4DC4B108C3}"
 	ProjectSection(SolutionItems) = preProject
+		bundle.bat = bundle.bat
 		clean.bat = clean.bat
 		commands.json = commands.json
+		linux-arm64.bat = linux-arm64.bat
 		linux-x64.bat = linux-x64.bat
 		win-x64.bat = win-x64.bat
 	EndProjectSection

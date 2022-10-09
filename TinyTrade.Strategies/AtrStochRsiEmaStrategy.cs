@@ -1,12 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 using TinyTrade.Core.Constructs;
 using TinyTrade.Core.Exchanges;
+using TinyTrade.Core.Statics;
 using TinyTrade.Core.Strategy;
 using TinyTrade.Indicators;
 
 namespace TinyTrade.Strategies;
 
-public class SampleStrategy : AbstractStrategy
+public class AtrStochRsiEmaStrategy : AbstractStrategy
 {
     private readonly Atr atr;
     private readonly Ema ema1;
@@ -17,21 +18,21 @@ public class SampleStrategy : AbstractStrategy
     private readonly float atrFactor;
     private readonly float stakePercentage;
     private readonly int intervalTolerance;
-    private readonly ILogger logger;
+    private readonly ILogger? logger;
     private float? lastStochK = null;
     private float? lastStochD = null;
 
-    public SampleStrategy(StrategyConstructorParameters parameters) : base(parameters)
+    public AtrStochRsiEmaStrategy(StrategyConstructorParameters parameters) : base(parameters)
     {
         logger = parameters.Logger;
-        riskRewardRatio = parameters.Genotype.GetValueOrDefault("riskRewardRatio");
-        atrFactor = parameters.Genotype.GetValueOrDefault("atrFactor");
-        stakePercentage = parameters.Genotype.GetValueOrDefault("stakePercentage");
-        intervalTolerance = (int)parameters.Genotype.GetValueOrDefault("intervalTolerance", 1);
+        riskRewardRatio = parameters.Traits.TraitValueOrDefault("riskRewardRatio", 1F);
+        atrFactor = parameters.Traits.TraitValueOrDefault("atrFactor", 1F);
+        stakePercentage = parameters.Traits.TraitValueOrDefault("stakePercentage", 0.1F);
+        intervalTolerance = parameters.Traits.TraitValueOrDefault("intervalTolerance", 1);
         atr = new Atr();
-        ema1 = new Ema((int)parameters.Genotype.GetValueOrDefault("ema1Period"));
-        ema2 = new Ema((int)parameters.Genotype.GetValueOrDefault("ema2Period"));
-        ema3 = new Ema((int)parameters.Genotype.GetValueOrDefault("ema3Period"));
+        ema1 = new Ema(parameters.Traits.TraitValueOrDefault("ema1Period", 15));
+        ema2 = new Ema(parameters.Traits.TraitValueOrDefault("ema2Period", 50));
+        ema3 = new Ema(parameters.Traits.TraitValueOrDefault("ema3Period", 125));
         stochRsi = new StochRsi();
 
         AddLongCondition(new PerpetualCondition(f =>
