@@ -5,7 +5,7 @@ using System.Diagnostics;
 using TinyTrade.Core.Constructs;
 using TinyTrade.Core.DataProviders;
 using TinyTrade.Core.Exchanges;
-using TinyTrade.Core.Exchanges.Backtest;
+using TinyTrade.Core.Exchanges.Offline;
 using TinyTrade.Core.Models;
 using TinyTrade.Core.Statics;
 using TinyTrade.Core.Strategy;
@@ -21,17 +21,25 @@ internal class BacktestService
         logger = provider.CreateLogger(string.Empty);
     }
 
+    /// <summary>
+    ///   Run a backtest that is compatible with parallel running using an existing <see cref="ParallelBacktestDataframeProvider"/> and a
+    ///   <see cref="Guid"/> of the strategy
+    /// </summary>
+    /// <param name="provider"> </param>
+    /// <param name="strategyIdentifier"> </param>
+    /// <param name="strategyModel"> </param>
+    /// <returns> </returns>
     public async Task<BacktestResultModel?> RunParallelBacktest(ParallelBacktestDataframeProvider provider, Guid strategyIdentifier, StrategyModel strategyModel)
     {
         try
         {
-            var exchange = new LocalTestExchange(100, logger);
+            var exchange = new OfflineExchange(100, logger);
             var cParams = new StrategyConstructorParameters()
             { Exchange = exchange, Logger = logger, Parameters = strategyModel.Parameters, Traits = strategyModel.Traits };
             if (!StrategyResolver.TryResolveStrategy(strategyModel.Name, cParams, out var strategy)) return null;
 
-            provider.Reset(strategyIdentifier);
             exchange.Reset();
+            provider.Reset(strategyIdentifier);
 
             strategy.OnStart();
             DataFrame? frame;
@@ -46,7 +54,7 @@ internal class BacktestService
                                 exchange.InitialBalance,
                                 exchange.GetTotalBalance(),
                                 provider.FramesCount);
-
+            provider.Clear(strategyIdentifier);
             return result;
         }
         catch (Exception e)

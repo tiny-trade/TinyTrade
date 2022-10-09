@@ -6,16 +6,19 @@ using TinyTrade.Core.DataProviders;
 using TinyTrade.Core.Models;
 using TinyTrade.Services;
 
-namespace TinyTrade.Opt.Modules;
+namespace TinyTrade.Opt;
 
-internal class StrategyFitnessHandler : IFitness
+/// <summary>
+///   Evaluator to evaluate <see cref="Core.Strategy.IStrategy"/> and assign fitnesses values
+/// </summary>
+internal class StrategyFitnessEvaluator : IFitness
 {
     private readonly ILogger? logger;
     private readonly BacktestService backtestService;
     private readonly OptimizableStrategyModel templateModel;
     private readonly ParallelBacktestDataframeProvider provider;
 
-    public StrategyFitnessHandler(BacktestService backtestService, Pair pair, TimeInterval interval, OptimizableStrategyModel strategyModel, ILogger? logger = null)
+    public StrategyFitnessEvaluator(BacktestService backtestService, Pair pair, TimeInterval interval, OptimizableStrategyModel strategyModel, ILogger? logger = null)
     {
         provider = DataframeProviderFactory.GetParallelBacktestDataframeProvider(interval, pair, Timeframe.FromFlag(strategyModel.Timeframe));
         templateModel = strategyModel;
@@ -33,7 +36,7 @@ internal class StrategyFitnessHandler : IFitness
 
     public double Evaluate(IChromosome chromosome)
     {
-        if (chromosome is not IdentifiableFloatingPointChromosome strategyChromosome) return 0;
+        if (chromosome is not IdFloatingPointChromosome strategyChromosome) return 0;
         var floats = strategyChromosome.ToFloatingPoints();
         if (floats.Length != templateModel.Genes.Count) return 0;
         var zip = templateModel.Genes.Zip(floats).ToList();
@@ -42,11 +45,10 @@ internal class StrategyFitnessHandler : IFitness
             Name = templateModel.Name,
             Parameters = templateModel.Parameters,
             Timeframe = templateModel.Timeframe,
-            Traits = zip.ConvertAll(z => new StrategyTrait(z.First.Key, (float)z.Second))
+            Traits = zip.ConvertAll(z => new Trait(z.First.Key, (float)z.Second))
         };
 
         var res = backtestService.RunParallelBacktest(provider, strategyChromosome.Id, evaluationModel).Result;
-        //provider.Reset(strategyChromosome.Id);
         return res is null ? 0 : CalculateFitness((BacktestResultModel)res);
     }
 

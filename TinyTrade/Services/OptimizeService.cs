@@ -2,9 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System.Text;
 using TinyTrade.Core.Constructs;
-using TinyTrade.Core.Models;
-using TinyTrade.Opt.Genes;
-using TinyTrade.Opt.Modules;
+using TinyTrade.Opt;
 
 namespace TinyTrade.Services;
 
@@ -43,13 +41,13 @@ internal class OptimizeService
             }
 
             var chromosome =
-                new IdentifiableFloatingPointChromosome(
+                new IdFloatingPointChromosome(
                     Guid.NewGuid(),
                     minValues, maxValues,
                     bits, fractionDigits,
                     values.Any(v => v is null) ? null : values.ConvertAll(v => (double)v!).ToArray());
 
-            var fitness = new StrategyFitnessHandler(backtestService, pair, interval, strategyModel, logger);
+            var fitness = new StrategyFitnessEvaluator(backtestService, pair, interval, strategyModel, logger);
             await fitness.Load();
 
             var selection = new TournamentSelection(16, true);
@@ -57,7 +55,7 @@ internal class OptimizeService
             var crossover = new UniformCrossover();// new VotingRecombinationCrossover(8, 4);
             var mutation = new UniformMutation(true);
             var termination = new FitnessStagnationTermination(64);// new GenerationNumberTermination(200);
-            var taskExecutor = new ParallelTaskExecutor { MinThreads = 16, MaxThreads = 64 };
+            var taskExecutor = new ParallelTaskExecutor { MinThreads = 4, MaxThreads = 32 };
             ga = new GeneticAlgorithm(pop, fitness, selection, crossover, mutation)
             {
                 Termination = termination,
@@ -79,7 +77,7 @@ internal class OptimizeService
     private void GenerationReport(object? sender, EventArgs args)
     {
         if (templateModel is null || ga is null) return;
-        if (ga.BestChromosome is not IdentifiableFloatingPointChromosome bestChromosome) return;
+        if (ga.BestChromosome is not IdFloatingPointChromosome bestChromosome) return;
         var bestFitness = bestChromosome!.Fitness!.Value;
 
         var phenotype = bestChromosome.ToFloatingPoints();

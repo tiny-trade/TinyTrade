@@ -2,12 +2,15 @@
 using System.ComponentModel;
 using TinyTrade.Core.Constructs;
 
-namespace TinyTrade.Opt.Genes;
+namespace TinyTrade.Opt;
 
 public enum GeneType
 { Integer, Float }
 
-internal class StrategyGene : StrategyTrait
+/// <summary>
+///   Decorator model of <see cref="Trait"/> in order to assign boundaries and gene types
+/// </summary>
+internal class StrategyGene : Trait
 {
     [JsonProperty("min")]
     public float? Min { get; private set; } = null;

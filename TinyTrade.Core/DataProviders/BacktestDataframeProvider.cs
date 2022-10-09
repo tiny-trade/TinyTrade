@@ -7,6 +7,9 @@ using TinyTrade.Statics;
 
 namespace TinyTrade.Core.DataProviders;
 
+/// <summary>
+///   Data provider for backtest data, automatically handles downloading of the data in <see cref="Load(IProgress{TinyTrade.Core.DataProviders.IDataframeProvider.LoadProgress}?)"/>
+/// </summary>
 public class BacktestDataframeProvider : IDataframeProvider
 {
     protected List<DataFrame> frames;

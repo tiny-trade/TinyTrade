@@ -16,5 +16,5 @@ public class StrategyModel
     public Dictionary<string, object> Parameters { get; init; } = new Dictionary<string, object>();
 
     [JsonProperty("traits")]
-    public List<StrategyTrait> Traits { get; init; } = new List<StrategyTrait>();
+    public List<Trait> Traits { get; init; } = new List<Trait>();
 }
