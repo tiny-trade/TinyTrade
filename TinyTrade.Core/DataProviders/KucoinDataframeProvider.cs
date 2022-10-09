@@ -32,7 +32,7 @@ public class KucoinDataframeProvider : IExchangeDataframeProvider
 
     public async Task Load(IProgress<LoadProgress>? progress = null) => _ = await socketClient.SpotStreams.SubscribeToKlineUpdatesAsync(pair.ForKucoin(), klineInterval, Callback);
 
-    public async Task<DataFrame?> Next()
+    public async Task<DataFrame?> Next(Guid? identifier = null)
     {
         while (dataFrames.Count <= 0)
         {

@@ -18,7 +18,7 @@ public class LocalTestExchange : IExchange
 
     public List<BacktestPosition> ClosedPositions { get; private set; }
 
-    public LocalTestExchange(float balance, ILogger? logger = null)
+    public LocalTestExchange(float balance = 100, ILogger? logger = null)
     {
         openPositions = new Dictionary<Guid, BacktestPosition>();
         this.logger = logger;

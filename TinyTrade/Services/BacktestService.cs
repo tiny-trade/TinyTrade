@@ -21,60 +21,37 @@ internal class BacktestService
         logger = provider.CreateLogger(string.Empty);
     }
 
-    public async Task<BacktestResultModel?> RunCachedBacktest(BacktestDataframeProvider provider, LocalTestExchange exchange, StrategyModel strategyModel, bool verbose = true)
+    public async Task<BacktestResultModel?> RunParallelBacktest(ParallelBacktestDataframeProvider provider, Guid strategyIdentifier, StrategyModel strategyModel)
     {
-        var cParams = new StrategyConstructorParameters()
-        { Exchange = exchange, Logger = logger, Parameters = strategyModel.Parameters, Traits = strategyModel.Traits };
-        if (!StrategyResolver.TryResolveStrategy(strategyModel.Name, cParams, out var strategy)) return null;
-
-        provider.Reset();
-        exchange.Reset();
-        var watch = new Stopwatch();
-        watch.Start();
-        strategy.OnStart();
-        if (verbose)
+        try
         {
-            var spinner = ConsoleSpinner.Factory().Info("Evaluating ").Frames(12, "-   ", "--  ", "--- ", "----", " ---", "  --", "   -", "    ").Build();
+            var exchange = new LocalTestExchange(100, logger);
+            var cParams = new StrategyConstructorParameters()
+            { Exchange = exchange, Logger = logger, Parameters = strategyModel.Parameters, Traits = strategyModel.Traits };
+            if (!StrategyResolver.TryResolveStrategy(strategyModel.Name, cParams, out var strategy)) return null;
 
-            await spinner.Await(Task.Run(async () =>
-            {
-                DataFrame? frame;
-                while ((frame = await provider.Next()) is not null)
-                {
-                    await strategy.UpdateState(frame);
-                }
-            }));
-        }
-        else
-        {
+            provider.Reset(strategyIdentifier);
+            exchange.Reset();
+
+            strategy.OnStart();
             DataFrame? frame;
-            while ((frame = await provider.Next()) is not null)
+            while ((frame = await provider.Next(strategyIdentifier)) is not null)
             {
                 await strategy.UpdateState(frame);
             }
-        }
-        strategy.OnStop();
-        watch.Stop();
-
-        var millis = watch.ElapsedMilliseconds;
-        if (exchange is LocalTestExchange testExchange)
-        {
+            strategy.OnStop();
             var result = new BacktestResultModel(
-                testExchange.ClosedPositions,
-                provider.Timeframe,
-                exchange.InitialBalance,
-                testExchange.GetTotalBalance(),
-                provider.FramesCount);
-            if (verbose)
-            {
-                logger.LogTrace("Processed {c} klines in just {ms}ms O.O - Hail to the C#!", provider.FramesCount, millis);
-                logger.LogInformation("Evaluation result:\n{r}", JsonConvert.SerializeObject(result, Formatting.Indented));
-            }
+                                exchange.ClosedPositions,
+                                provider.Timeframe,
+                                exchange.InitialBalance,
+                                exchange.GetTotalBalance(),
+                                provider.FramesCount);
+
             return result;
         }
-        else
+        catch (Exception e)
         {
-            logger.LogWarning("Internal error: unable to retrieve test exchange for computing evaluation results");
+            logger.LogError("Exception captured: {e}", e.Message);
             return null;
         }
     }
@@ -89,6 +66,35 @@ internal class BacktestService
         await provider.Load(progress);
         bar.Dispose();
 
-        return await RunCachedBacktest(provider, exchange, strategyModel);
+        var cParams = new StrategyConstructorParameters()
+        { Exchange = exchange, Logger = logger, Parameters = strategyModel.Parameters, Traits = strategyModel.Traits };
+        if (!StrategyResolver.TryResolveStrategy(strategyModel.Name, cParams, out var strategy)) return null;
+
+        var watch = new Stopwatch();
+        watch.Start();
+        strategy.OnStart();
+        var spinner = ConsoleSpinner.Factory().Info("Evaluating ").Frames(12, "-   ", "--  ", "--- ", "----", " ---", "  --", "   -", "    ").Build();
+
+        await spinner.Await(Task.Run(async () =>
+        {
+            DataFrame? frame;
+            while ((frame = await provider.Next()) is not null)
+            {
+                await strategy.UpdateState(frame);
+            }
+        }));
+        strategy.OnStop();
+        watch.Stop();
+
+        var millis = watch.ElapsedMilliseconds;
+        var result = new BacktestResultModel(
+                exchange.ClosedPositions,
+                provider.Timeframe,
+                exchange.InitialBalance,
+                exchange.GetTotalBalance(),
+                provider.FramesCount);
+        logger.LogTrace("Processed {c} klines in just {ms}ms O.O - Hail to the C#!", provider.FramesCount, millis);
+        logger.LogInformation("Evaluation result:\n{r}", JsonConvert.SerializeObject(result, Formatting.Indented));
+        return result;
     }
 }

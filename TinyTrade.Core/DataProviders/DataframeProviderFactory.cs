@@ -15,6 +15,9 @@ public static class DataframeProviderFactory
     public static BacktestDataframeProvider GetBacktestDataframeProvider(TimeInterval interval, Pair pair, Timeframe timeframe)
         => new BacktestDataframeProvider(interval, pair, timeframe);
 
+    public static ParallelBacktestDataframeProvider GetParallelBacktestDataframeProvider(TimeInterval interval, Pair pair, Timeframe timeframe)
+        => new ParallelBacktestDataframeProvider(interval, pair, timeframe);
+
     public static IExchangeDataframeProvider GetExchangeDataframeProvider(Exchange exchange, Timeframe timeframe, Pair pair)
     {
         return exchange switch

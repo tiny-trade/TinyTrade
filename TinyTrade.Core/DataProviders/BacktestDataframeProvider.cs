@@ -9,24 +9,24 @@ namespace TinyTrade.Core.DataProviders;
 
 public class BacktestDataframeProvider : IDataframeProvider
 {
+    protected List<DataFrame> frames;
     // Currently using Binance for backtest data
     private const string BaseUrl = "https://data.binance.vision/data/spot/monthly/klines";
     private readonly TimeInterval interval;
     private readonly int granularity;
 
     private readonly HttpClient httpClient;
-
-    private List<DataFrame> frames;
-
     private int currentIndex = 0;
 
     public int FramesCount => frames.Count;
+
+    public IReadOnlyCollection<DataFrame> Frames => frames;
 
     public Timeframe Timeframe { get; private set; }
 
     public Pair Pair { get; private set; }
 
-    public BacktestDataframeProvider(TimeInterval interval, Pair pair, Timeframe timeframe)
+    internal BacktestDataframeProvider(TimeInterval interval, Pair pair, Timeframe timeframe)
     {
         this.interval = interval;
         Pair = pair;
@@ -52,9 +52,9 @@ public class BacktestDataframeProvider : IDataframeProvider
         frames = await BuildDataFrames(valueProgress);
     }
 
-    public void Reset() => currentIndex = 0;
+    public virtual void Reset(Guid? identifier = null) => currentIndex = 0;
 
-    public async Task<DataFrame?> Next()
+    public virtual async Task<DataFrame?> Next(Guid? identifier = null)
     {
         await Task.CompletedTask;
         return currentIndex >= frames.Count ? null : frames[currentIndex++];

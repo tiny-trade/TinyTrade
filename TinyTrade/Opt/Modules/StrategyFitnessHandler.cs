@@ -3,26 +3,23 @@ using HandierCli.Progress;
 using Microsoft.Extensions.Logging;
 using TinyTrade.Core.Constructs;
 using TinyTrade.Core.DataProviders;
-using TinyTrade.Core.Exchanges.Backtest;
 using TinyTrade.Core.Models;
 using TinyTrade.Services;
 
 namespace TinyTrade.Opt.Modules;
 
-internal class StrategyFitness : IFitness
+internal class StrategyFitnessHandler : IFitness
 {
     private readonly ILogger? logger;
     private readonly BacktestService backtestService;
     private readonly OptimizableStrategyModel templateModel;
-    private readonly BacktestDataframeProvider provider;
-    private readonly LocalTestExchange exchange;
+    private readonly ParallelBacktestDataframeProvider provider;
 
-    public StrategyFitness(BacktestService backtestService, Pair pair, TimeInterval interval, OptimizableStrategyModel strategyModel, ILogger? logger = null)
+    public StrategyFitnessHandler(BacktestService backtestService, Pair pair, TimeInterval interval, OptimizableStrategyModel strategyModel, ILogger? logger = null)
     {
-        provider = new BacktestDataframeProvider(interval, pair, Timeframe.FromFlag(strategyModel.Timeframe));
-        exchange = new LocalTestExchange(100, logger);
+        provider = DataframeProviderFactory.GetParallelBacktestDataframeProvider(interval, pair, Timeframe.FromFlag(strategyModel.Timeframe));
+        templateModel = strategyModel;
         this.backtestService = backtestService;
-        this.templateModel = strategyModel;
         this.logger = logger;
     }
 
@@ -36,7 +33,7 @@ internal class StrategyFitness : IFitness
 
     public double Evaluate(IChromosome chromosome)
     {
-        if (chromosome is not FloatingPointChromosome strategyChromosome) return 0;
+        if (chromosome is not IdentifiableFloatingPointChromosome strategyChromosome) return 0;
         var floats = strategyChromosome.ToFloatingPoints();
         if (floats.Length != templateModel.Genes.Count) return 0;
         var zip = templateModel.Genes.Zip(floats).ToList();
@@ -48,7 +45,8 @@ internal class StrategyFitness : IFitness
             Traits = zip.ConvertAll(z => new StrategyTrait(z.First.Key, (float)z.Second))
         };
 
-        var res = backtestService.RunCachedBacktest(provider, exchange, evaluationModel, false).Result;
+        var res = backtestService.RunParallelBacktest(provider, strategyChromosome.Id, evaluationModel).Result;
+        //provider.Reset(strategyChromosome.Id);
         return res is null ? 0 : CalculateFitness((BacktestResultModel)res);
     }
 
