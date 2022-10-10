@@ -51,7 +51,7 @@ public class BacktestDataframeProvider : IDataframeProvider
             progress?.Report(prog);
         });
         progress?.Report(prog);
-        await DownloadData(valueProgress);
+        await DownloadAndExtractData(valueProgress);
         prog.Description = "Building dataframes";
         frames = await BuildDataFrames(valueProgress);
     }
@@ -66,7 +66,7 @@ public class BacktestDataframeProvider : IDataframeProvider
 
     private string GenerateUrlForSingle(Pair pair, string monthDate) => $"{BaseUrl}/{pair.ForBinance()}/1m/{pair.ForBinance()}-1m-{monthDate}.zip";
 
-    private async Task DownloadData(IProgress<float>? progress = null)
+    private async Task DownloadAndExtractData(IProgress<float>? progress = null)
     {
         if (!Directory.Exists(Paths.Cache))
         {

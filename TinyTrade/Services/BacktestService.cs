@@ -73,12 +73,12 @@ internal class BacktestService
 
     public async Task<BacktestResultModel?> RunBacktest(Pair pair, TimeInterval interval, StrategyModel strategyModel)
     {
+        var bar = ConsoleProgressBar.Factory().Lenght(50).Build();
         try
         {
             float initialBalance = 100;
             var exchange = ExchangeFactory.GetLocalTestExchange(initialBalance, logger);
             var provider = DataframeProviderFactory.GetBacktestDataframeProvider(interval, pair, Timeframe.FromFlag(strategyModel.Timeframe));
-            var bar = ConsoleProgressBar.Factory().Lenght(50).Build();
             var progress = new Progress<IDataframeProvider.LoadProgress>(p => bar.Report(p.Progress, p.Description));
             await provider.Load(progress);
             bar.Dispose();
@@ -116,6 +116,7 @@ internal class BacktestService
         }
         catch (Exception e)
         {
+            bar.Dispose();
             logger.LogError("Exception captured: {e}", e.Message);
             return null;
         }
