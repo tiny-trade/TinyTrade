@@ -18,7 +18,7 @@ public static class Extensions
         return false;
     }
 
-    public static T TraitValueOrDefault<T>(this List<StrategyTrait> genes, string key, T defaultVal) where T : notnull
+    public static T TraitValueOrDefault<T>(this List<Trait> genes, string key, T defaultVal) where T : notnull
     {
         var g = genes.FirstOrDefault(g => g.Key.Equals(key));
         return g is not null ? (T)Convert.ChangeType(g.Value, typeof(T)) : defaultVal;

@@ -16,26 +16,27 @@ internal class RunService
 
     public async Task RunLive(string mode, string strategyFile, string pair)
     {
-        if (!File.Exists(strategyFile))
-        {
-            logger.LogError("Unable to locate strategy file {s}", strategyFile);
-            return;
-        }
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = LiveExecutable + GetOsSuffix(),
-            Arguments = $"{mode} {strategyFile} {pair}",
-            RedirectStandardOutput = true,
-            UserName = null,
-        };
-        startInfo.RedirectStandardOutput = false;
-        startInfo.UseShellExecute = true;
-        startInfo.WindowStyle = ProcessWindowStyle.Hidden;
-        //DEBUG
-        //startInfo.WindowStyle = ProcessWindowStyle.Normal;
-
+        await Task.CompletedTask;
         try
         {
+            if (!File.Exists(strategyFile))
+            {
+                logger.LogError("Unable to locate strategy file {s}", strategyFile);
+                return;
+            }
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = LiveExecutable + GetOsSuffix(),
+                Arguments = $"{mode} {strategyFile} {pair}",
+                RedirectStandardOutput = true,
+                UserName = null,
+            };
+            startInfo.RedirectStandardOutput = false;
+            startInfo.UseShellExecute = true;
+            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            //DEBUG
+            //startInfo.WindowStyle = ProcessWindowStyle.Normal;
+
             var res = Process.Start(startInfo);
 
             if (res is not null)
@@ -48,12 +49,10 @@ internal class RunService
                 logger.LogError("Unable to launch process");
             }
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            logger.LogError("{e}", ex);
+            logger.LogError("Exception captured: {e}", e.Message);
         }
-
-        await Task.CompletedTask;
     }
 
     private string GetOsSuffix() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;

@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using TinyTrade.Core.Exchanges.Backtest;
+using TinyTrade.Core.Exchanges.Offline;
 
 namespace TinyTrade.Core.Exchanges;
 
@@ -10,8 +10,8 @@ public static class ExchangeFactory
     /// <param name="initialBalance"> </param>
     /// <param name="logger"> </param>
     /// <returns> An exchange that is used for testing purposes </returns>
-    public static LocalTestExchange GetLocalTestExchange(float initialBalance, ILogger? logger = null)
-        => new LocalTestExchange(initialBalance, logger);
+    public static OfflineExchange GetLocalTestExchange(float initialBalance, ILogger? logger = null)
+        => new OfflineExchange(initialBalance, logger);
 
     public static IExchange GetExchange(Exchange exchange, ILogger? logger = null)
     {

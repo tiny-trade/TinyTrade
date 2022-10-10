@@ -27,15 +27,22 @@ internal abstract class BaseRun
     public async Task RunAsync(int preloadCandles = 0)
     {
         var progress = new Progress<IDataframeProvider.LoadProgress>(p => Logger?.LogDebug("{p}", p.Description));
-        await dataframeProvider.LoadAndPreloadCandles(preloadCandles, progress);
-        strategy.OnStart();
-        DataFrame? frame;
-        while ((frame = await dataframeProvider.Next()) is not null)
+        try
         {
-            await strategy.UpdateState(frame);
-            Heartbeat(frame);
+            await dataframeProvider.LoadAndPreloadCandles(preloadCandles, progress);
+            strategy.OnStart();
+            DataFrame? frame;
+            while ((frame = await dataframeProvider.Next()) is not null)
+            {
+                await strategy.UpdateState(frame);
+                Heartbeat(frame);
+            }
+            strategy.OnStop();
         }
-        strategy.OnStop();
+        catch (Exception e)
+        {
+            Logger?.LogError("Exception captured: {e}", e);
+        }
     }
 
     /// <summary>

@@ -1,6 +1,6 @@
-﻿namespace TinyTrade.Core.Exchanges.Backtest;
+﻿namespace TinyTrade.Core.Exchanges.Offline;
 
-public class BacktestPosition
+public class OfflinePosition
 {
     public float TakeProfit { get; init; }
 
@@ -20,7 +20,7 @@ public class BacktestPosition
 
     public float Profit { get; private set; }
 
-    public BacktestPosition(OrderSide side, float openPrice, float takeProfit, float stopLoss, float stake)
+    public OfflinePosition(OrderSide side, float openPrice, float takeProfit, float stopLoss, float stake)
     {
         TakeProfit = takeProfit;
         StopLoss = stopLoss;

@@ -1,31 +1,32 @@
 ﻿using Microsoft.Extensions.Logging;
 using TinyTrade.Core.Constructs;
 
-namespace TinyTrade.Core.Exchanges.Backtest;
+namespace TinyTrade.Core.Exchanges.Offline;
 
 /// <summary>
-///   Test exchange based on backtest data. It overrides the <see cref="IExchange"/> async methods in order to provide a faster processing:
+///   An exchange that keeps a dummy balance and utomatically check for <see cref="OfflinePosition"/> status in the <see
+///   cref="Tick(DataFrame)"/> method. It overrides the <see cref="IExchange"/> async methods in order to provide a faster processing:
 ///   methods are treated as synchronous since there is no need for any endpoint call
 /// </summary>
-public class LocalTestExchange : IExchange
+public class OfflineExchange : IExchange
 {
     private readonly ILogger? logger;
-    private readonly Dictionary<Guid, BacktestPosition> openPositions;
+    private readonly Dictionary<Guid, OfflinePosition> openPositions;
     private float balance;
     private float availableBalance;
 
     public float InitialBalance { get; private set; }
 
-    public List<BacktestPosition> ClosedPositions { get; private set; }
+    public List<OfflinePosition> ClosedPositions { get; private set; }
 
-    public LocalTestExchange(float balance, ILogger? logger = null)
+    public OfflineExchange(float balance = 100, ILogger? logger = null)
     {
-        openPositions = new Dictionary<Guid, BacktestPosition>();
+        openPositions = new Dictionary<Guid, OfflinePosition>();
         this.logger = logger;
         this.balance = balance;
         availableBalance = balance;
         InitialBalance = balance;
-        ClosedPositions = new List<BacktestPosition>();
+        ClosedPositions = new List<OfflinePosition>();
     }
 
     public void Reset()
@@ -39,7 +40,7 @@ public class LocalTestExchange : IExchange
     {
         if (availableBalance < stake) return;
         availableBalance -= stake;
-        var pos = new BacktestPosition(side, openPrice, takeProfit, stopLoss, stake);
+        var pos = new OfflinePosition(side, openPrice, takeProfit, stopLoss, stake);
         openPositions.Add(Guid.NewGuid(), pos);
     }
 

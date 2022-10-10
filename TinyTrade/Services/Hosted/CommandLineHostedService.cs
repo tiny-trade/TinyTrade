@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using TinyTrade.Core.Constructs;
-using TinyTrade.Core.Models;
+using TinyTrade.Opt;
 
 namespace TinyTrade.Services.Hosted;
 

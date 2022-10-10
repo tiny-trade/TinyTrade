@@ -5,7 +5,7 @@ using System.Diagnostics;
 using TinyTrade.Core.Constructs;
 using TinyTrade.Core.DataProviders;
 using TinyTrade.Core.Exchanges;
-using TinyTrade.Core.Exchanges.Backtest;
+using TinyTrade.Core.Exchanges.Offline;
 using TinyTrade.Core.Models;
 using TinyTrade.Core.Statics;
 using TinyTrade.Core.Strategy;
@@ -21,19 +21,75 @@ internal class BacktestService
         logger = provider.CreateLogger(string.Empty);
     }
 
-    public async Task<BacktestResultModel?> RunCachedBacktest(BacktestDataframeProvider provider, LocalTestExchange exchange, StrategyModel strategyModel, bool verbose = true)
+    /// <summary>
+    ///   Run a backtest that is compatible with parallel running using an existing <see cref="ParallelBacktestDataframeProvider"/> and a
+    ///   <see cref="Guid"/> of the strategy
+    /// </summary>
+    /// <param name="provider"> </param>
+    /// <param name="strategyIdentifier"> </param>
+    /// <param name="strategyModel"> </param>
+    /// <returns> </returns>
+    public async Task<List<BacktestResultModel>?> RunParallelBacktest(ParallelBacktestDataframeProvider provider, Guid strategyIdentifier, StrategyModel strategyModel)
     {
-        var cParams = new StrategyConstructorParameters()
-        { Exchange = exchange, Logger = logger, Parameters = strategyModel.Parameters, Traits = strategyModel.Traits };
-        if (!StrategyResolver.TryResolveStrategy(strategyModel.Name, cParams, out var strategy)) return null;
-
-        provider.Reset();
-        exchange.Reset();
-        var watch = new Stopwatch();
-        watch.Start();
-        strategy.OnStart();
-        if (verbose)
+        try
         {
+            var exchange = new OfflineExchange(100, logger);
+            var cParams = new StrategyConstructorParameters()
+            { Exchange = exchange, Logger = logger, Parameters = strategyModel.Parameters, Traits = strategyModel.Traits };
+            if (!StrategyResolver.TryResolveStrategy(strategyModel.Name, cParams, out var strategy)) return null;
+
+            exchange.Reset();
+            provider.Reset(strategyIdentifier);
+
+            var results = new List<BacktestResultModel>();
+            DataFrame? frame;
+            while (provider.HasAnotherBatch(strategyIdentifier))
+            {
+                strategy.OnStart();
+
+                while ((frame = await provider.Next(strategyIdentifier)) is not null)
+                {
+                    await strategy.UpdateState(frame);
+                }
+                strategy.OnStop();
+                var result = new BacktestResultModel(
+                                    exchange.ClosedPositions,
+                                    provider.Timeframe,
+                                    exchange.InitialBalance,
+                                    exchange.GetTotalBalance(),
+                                    provider.FramesCount);
+                strategy.Reset();
+                results.Add(result);
+            }
+            provider.Clear(strategyIdentifier);
+            return results;
+        }
+        catch (Exception e)
+        {
+            logger.LogError("Exception captured: {e}", e.Message);
+            return null;
+        }
+    }
+
+    public async Task<BacktestResultModel?> RunBacktest(Pair pair, TimeInterval interval, StrategyModel strategyModel)
+    {
+        var bar = ConsoleProgressBar.Factory().Lenght(50).Build();
+        try
+        {
+            float initialBalance = 100;
+            var exchange = ExchangeFactory.GetLocalTestExchange(initialBalance, logger);
+            var provider = DataframeProviderFactory.GetBacktestDataframeProvider(interval, pair, Timeframe.FromFlag(strategyModel.Timeframe));
+            var progress = new Progress<IDataframeProvider.LoadProgress>(p => bar.Report(p.Progress, p.Description));
+            await provider.Load(progress);
+            bar.Dispose();
+
+            var cParams = new StrategyConstructorParameters()
+            { Exchange = exchange, Logger = logger, Parameters = strategyModel.Parameters, Traits = strategyModel.Traits };
+            if (!StrategyResolver.TryResolveStrategy(strategyModel.Name, cParams, out var strategy)) return null;
+
+            var watch = new Stopwatch();
+            watch.Start();
+            strategy.OnStart();
             var spinner = ConsoleSpinner.Factory().Info("Evaluating ").Frames(12, "-   ", "--  ", "--- ", "----", " ---", "  --", "   -", "    ").Build();
 
             await spinner.Await(Task.Run(async () =>
@@ -44,51 +100,25 @@ internal class BacktestService
                     await strategy.UpdateState(frame);
                 }
             }));
-        }
-        else
-        {
-            DataFrame? frame;
-            while ((frame = await provider.Next()) is not null)
-            {
-                await strategy.UpdateState(frame);
-            }
-        }
-        strategy.OnStop();
-        watch.Stop();
+            strategy.OnStop();
+            watch.Stop();
 
-        var millis = watch.ElapsedMilliseconds;
-        if (exchange is LocalTestExchange testExchange)
-        {
+            var millis = watch.ElapsedMilliseconds;
             var result = new BacktestResultModel(
-                testExchange.ClosedPositions,
-                provider.Timeframe,
-                exchange.InitialBalance,
-                testExchange.GetTotalBalance(),
-                provider.FramesCount);
-            if (verbose)
-            {
-                logger.LogTrace("Processed {c} klines in just {ms}ms O.O - Hail to the C#!", provider.FramesCount, millis);
-                logger.LogInformation("Evaluation result:\n{r}", JsonConvert.SerializeObject(result, Formatting.Indented));
-            }
+                    exchange.ClosedPositions,
+                    provider.Timeframe,
+                    exchange.InitialBalance,
+                    exchange.GetTotalBalance(),
+                    provider.FramesCount);
+            logger.LogTrace("Processed {c} klines in just {ms}ms O.O - Hail to the C#!", provider.FramesCount, millis);
+            logger.LogInformation("Evaluation result:\n{r}", JsonConvert.SerializeObject(result, Formatting.Indented));
             return result;
         }
-        else
+        catch (Exception e)
         {
-            logger.LogWarning("Internal error: unable to retrieve test exchange for computing evaluation results");
+            bar.Dispose();
+            logger.LogError("Exception captured: {e}", e.Message);
             return null;
         }
-    }
-
-    public async Task<BacktestResultModel?> RunBacktest(Pair pair, TimeInterval interval, StrategyModel strategyModel)
-    {
-        float initialBalance = 100;
-        var exchange = ExchangeFactory.GetLocalTestExchange(initialBalance, logger);
-        var provider = DataframeProviderFactory.GetBacktestDataframeProvider(interval, pair, Timeframe.FromFlag(strategyModel.Timeframe));
-        var bar = ConsoleProgressBar.Factory().Lenght(20).Build();
-        var progress = new Progress<IDataframeProvider.LoadProgress>(p => bar.Report(p.Progress, p.Description));
-        await provider.Load(progress);
-        bar.Dispose();
-
-        return await RunCachedBacktest(provider, exchange, strategyModel);
     }
 }

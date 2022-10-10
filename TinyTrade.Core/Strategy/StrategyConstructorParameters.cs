@@ -8,13 +8,13 @@ public struct StrategyConstructorParameters
 {
     public Dictionary<string, object> Parameters { get; init; }
 
-    public List<StrategyTrait> Traits { get; init; }
+    public List<Trait> Traits { get; init; }
 
     public ILogger? Logger { get; init; }
 
     public IExchange Exchange { get; init; }
 
-    public StrategyConstructorParameters(Dictionary<string, object> parameters, List<StrategyTrait> genotype, ILogger? logger, IExchange exchange)
+    public StrategyConstructorParameters(Dictionary<string, object> parameters, List<Trait> genotype, ILogger? logger, IExchange exchange)
     {
         Parameters = parameters;
         Traits = genotype;

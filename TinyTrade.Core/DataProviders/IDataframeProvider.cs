@@ -14,7 +14,7 @@ public interface IDataframeProvider
     ///   Ask and wait for the next available <see cref="DataFrame"/>
     /// </summary>
     /// <returns> </returns>
-    Task<DataFrame?> Next();
+    Task<DataFrame?> Next(Guid? identifier = null);
 
     public struct LoadProgress
     {

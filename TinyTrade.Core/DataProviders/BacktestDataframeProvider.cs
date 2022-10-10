@@ -7,26 +7,29 @@ using TinyTrade.Statics;
 
 namespace TinyTrade.Core.DataProviders;
 
+/// <summary>
+///   Data provider for backtest data, automatically handles downloading of the data in <see cref="Load(IProgress{TinyTrade.Core.DataProviders.IDataframeProvider.LoadProgress}?)"/>
+/// </summary>
 public class BacktestDataframeProvider : IDataframeProvider
 {
+    protected List<DataFrame> frames;
     // Currently using Binance for backtest data
     private const string BaseUrl = "https://data.binance.vision/data/spot/monthly/klines";
     private readonly TimeInterval interval;
     private readonly int granularity;
 
     private readonly HttpClient httpClient;
-
-    private List<DataFrame> frames;
-
     private int currentIndex = 0;
 
     public int FramesCount => frames.Count;
+
+    public IReadOnlyCollection<DataFrame> Frames => frames;
 
     public Timeframe Timeframe { get; private set; }
 
     public Pair Pair { get; private set; }
 
-    public BacktestDataframeProvider(TimeInterval interval, Pair pair, Timeframe timeframe)
+    internal BacktestDataframeProvider(TimeInterval interval, Pair pair, Timeframe timeframe)
     {
         this.interval = interval;
         Pair = pair;
@@ -36,7 +39,7 @@ public class BacktestDataframeProvider : IDataframeProvider
         httpClient = new HttpClient();
     }
 
-    public async Task Load(IProgress<IDataframeProvider.LoadProgress>? progress = null)
+    public virtual async Task Load(IProgress<IDataframeProvider.LoadProgress>? progress = null)
     {
         IDataframeProvider.LoadProgress prog = new IDataframeProvider.LoadProgress
         {
@@ -47,14 +50,15 @@ public class BacktestDataframeProvider : IDataframeProvider
             prog.Progress = v;
             progress?.Report(prog);
         });
-        await DownloadData(valueProgress);
+        progress?.Report(prog);
+        await DownloadAndExtractData(valueProgress);
         prog.Description = "Building dataframes";
         frames = await BuildDataFrames(valueProgress);
     }
 
-    public void Reset() => currentIndex = 0;
+    public virtual void Reset(Guid? identifier = null) => currentIndex = 0;
 
-    public async Task<DataFrame?> Next()
+    public virtual async Task<DataFrame?> Next(Guid? identifier = null)
     {
         await Task.CompletedTask;
         return currentIndex >= frames.Count ? null : frames[currentIndex++];
@@ -62,7 +66,7 @@ public class BacktestDataframeProvider : IDataframeProvider
 
     private string GenerateUrlForSingle(Pair pair, string monthDate) => $"{BaseUrl}/{pair.ForBinance()}/1m/{pair.ForBinance()}-1m-{monthDate}.zip";
 
-    private async Task DownloadData(IProgress<float>? progress = null)
+    private async Task DownloadAndExtractData(IProgress<float>? progress = null)
     {
         if (!Directory.Exists(Paths.Cache))
         {
@@ -74,22 +78,27 @@ public class BacktestDataframeProvider : IDataframeProvider
             var periods = interval.GetPeriods();
             var val = 0;
 
-            await Parallel.ForEachAsync(periods, new ParallelOptions() { MaxDegreeOfParallelism = 16 }, async (p, token) =>
+            var toDownload = new List<(string, string)>();
+
+            foreach (var period in periods)
             {
-                var elem = p;
-                var fileName = $"{Paths.UserData}/{Pair.ForBinance()}-1m-{elem}.csv";
+                var fileName = $"{Paths.UserData}/{Pair.ForBinance()}-1m-{period}.csv";
                 if (!File.Exists(fileName))
                 {
-                    var archiveName = $"{Paths.Cache}/{Pair}-{elem}.zip";
+                    var archiveName = $"{Paths.Cache}/{Pair}-{period}.zip";
                     if (!File.Exists(archiveName))
                     {
-                        var url = GenerateUrlForSingle(Pair, elem);
-                        await httpClient.DownloadFile(url, archiveName);
+                        toDownload.Add((GenerateUrlForSingle(Pair, period), archiveName));
                     }
                     archives.Add(archiveName);
                 }
+            }
+
+            await Parallel.ForEachAsync(toDownload, new ParallelOptions() { MaxDegreeOfParallelism = 16 }, async (p, token) =>
+            {
+                await httpClient.DownloadFile(p.Item1, p.Item2);
                 Interlocked.Increment(ref val);
-                progress?.Report((float)val / (periods.Count() - 1));
+                progress?.Report((float)val / (toDownload.Count - 1));
             });
 
             for (var i = 0; i < archives.Count; i++)

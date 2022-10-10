@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 using TinyTrade.Core.Constructs;
-using TinyTrade.Core.Exchanges.Backtest;
+using TinyTrade.Core.Exchanges.Offline;
 
 namespace TinyTrade.Core.Models;
 
@@ -34,7 +34,7 @@ public struct BacktestResultModel
     [JsonProperty("profitPercentage")]
     public float ProfitPercentage { get; private set; }
 
-    public BacktestResultModel(List<BacktestPosition> positions, Timeframe timeframe, float initialBalance, float finalBalance, int candles)
+    public BacktestResultModel(List<OfflinePosition> positions, Timeframe timeframe, float initialBalance, float finalBalance, int candles)
     {
         Timeframe = timeframe;
         Days = candles / 1440;
