@@ -46,45 +46,15 @@ if (strategyModel is null)
 {
     Environment.Exit(1);
 }
-
-// Arguments are successful
-Directory.CreateDirectory(Paths.Processes);
-
-var model = new LiveProcessModel(Environment.ProcessId, mode, strategyFile, pair);
-var serialized = JsonConvert.SerializeObject(model, Formatting.Indented);
-var path = Path.Join(Paths.Processes, model.Pid.ToString() + ".json");
-File.WriteAllText(path, serialized);
-
-if (mode == "foretest")
+try
 {
-    float initialBalance = 100;
-    var exchange = ExchangeFactory.GetLocalTestExchange(initialBalance, logger);
-    var cParams = new StrategyConstructorParameters(strategyModel.Parameters, strategyModel.Traits, logger, exchange);
-    if (!StrategyResolver.TryResolveStrategy(strategyModel.Name, cParams, out var strategy))
-    {
-        logger.Log(LogLevel.Error, "Unable to instiantiate {s} strategy", strategyModel.Name);
-        return;
-    }
-    logger.Log(LogLevel.Debug, "Resolved strategy {s}", strategy);
-
-    var testRun = new ForetestRun(Pair.Parse(pair), Timeframe.FromFlag(strategyModel.Timeframe), strategy, exchange, logger);
-
-    var gene = strategyModel.Traits.MaxBy(p => p.Value);
-    await testRun.RunAsync(gene is null ? 0 : (int)gene.Value);
+    var runMode = Enum.Parse<RunMode>(mode, true);
+    var run = new BaseRun(runMode, Pair.Parse(pair), Timeframe.FromFlag(strategyModel.Timeframe), strategyModel, logger);
+    var trait = strategyModel.Traits.MaxBy(p => p.Value);
+    await run.RunAsync(trait is null ? 0 : (int)trait.Value!);
 }
-else if (mode == "live")
+catch (Exception e)
 {
-    logger.LogWarning("Live trading mode is not implemented yet X(");
-    if (handler.TryGetKeyed("-e", out var exchangeString))
-    {
-        Exchange ex;
-        try
-        {
-            ex = (Exchange)Enum.Parse(typeof(Exchange), exchangeString, true);
-        }
-        catch (Exception)
-        {
-        }
-    }
-    // TODO instantiate exchange and run live
+    Console.WriteLine(e);
+    Console.ReadLine();
 }

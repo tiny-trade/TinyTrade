@@ -10,13 +10,19 @@ public interface IExchangeDataframeProvider : IDataframeProvider
     /// <returns> </returns>
     async Task<bool> LoadAndPreloadCandles(int amount, IProgress<LoadProgress>? progress = null)
     {
-        await Load(progress);
         var p = new LoadProgress
         {
-            Description = "Preloading candles"
+            Description = "Loading dataframe provider"
         };
         progress?.Report(p);
-        return await PreloadCandles(amount);
+        await Load(progress);
+        p.Description = "Preloading candles";
+        progress?.Report(p);
+        var res = await PreloadCandles(amount);
+        p.Description = res ? "Candles preloaded" : "Unable to preload candles";
+        p.Progress = 1F;
+        progress?.Report(p);
+        return res;
     }
 
     Task<bool> PreloadCandles(int amount);
