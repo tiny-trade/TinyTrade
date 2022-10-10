@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using System.Text;
 using TinyTrade.Core.Constructs;
 using TinyTrade.Opt;
+using TinyTrade.Statics;
 
 namespace TinyTrade.Services;
 
@@ -12,6 +13,8 @@ internal class OptimizeService
     private readonly BacktestService backtestService;
     private GeneticAlgorithm? ga;
     private OptimizableStrategyModel? templateModel;
+    private string? reportPath;
+    private double lastFitness = 0;
 
     public OptimizeService(BacktestService backtestService, ILoggerProvider loggerProvider)
     {
@@ -23,6 +26,7 @@ internal class OptimizeService
     {
         try
         {
+            reportPath = $"{Paths.GeneticReports}/{pair.ForBinance()}_{interval}_{strategyModel.Name}.txt";
             templateModel = strategyModel;
             var minValues = new double[strategyModel.Genes.Count];
             var maxValues = new double[strategyModel.Genes.Count];
@@ -51,18 +55,17 @@ internal class OptimizeService
             await fitness.Load();
 
             var selection = new TournamentSelection(16, true);
-            var pop = new Population(64, 128, chromosome);
+            var population = new Population(128, 256, chromosome);
             var crossover = new UniformCrossover();// new VotingRecombinationCrossover(8, 4);
             var mutation = new UniformMutation(true);
-            var termination = new FitnessStagnationTermination(64);// new GenerationNumberTermination(200);
-            var taskExecutor = new ParallelTaskExecutor { MinThreads = 4, MaxThreads = 32 };
-            ga = new GeneticAlgorithm(pop, fitness, selection, crossover, mutation)
+            var termination = new FitnessStagnationTermination(16);// new GenerationNumberTermination(200);
+            var taskExecutor = new ParallelTaskExecutor { MinThreads = 2, MaxThreads = 32 };
+            ga = new GeneticAlgorithm(population, fitness, selection, crossover, mutation)
             {
                 Termination = termination,
                 TaskExecutor = taskExecutor,
-                MutationProbability = 0.2F
+                MutationProbability = 0.25F
             };
-
             ga.GenerationRan += GenerationReport;
             logger.LogInformation("Generation {g} running...", 0);
             ga.Start();
@@ -76,25 +79,28 @@ internal class OptimizeService
 
     private void GenerationReport(object? sender, EventArgs args)
     {
-        if (templateModel is null || ga is null) return;
+        if (templateModel is null || ga is null || string.IsNullOrEmpty(reportPath)) return;
         if (ga.BestChromosome is not IdFloatingPointChromosome bestChromosome) return;
         var bestFitness = bestChromosome!.Fitness!.Value;
-
-        var phenotype = bestChromosome.ToFloatingPoints();
-        var zip = phenotype.Zip(templateModel.Genes);
-        var stringBuilder = new StringBuilder($"Generation {ga.GenerationsNumber}:\nBest:\n");
-        foreach (var (value, gene) in zip)
+        if (lastFitness < bestFitness)
         {
-            stringBuilder.Append("| ");
-            stringBuilder.Append(gene.Key);
-            stringBuilder.Append(" = ");
-            stringBuilder.Append(value);
-            stringBuilder.Append('\n');
+            lastFitness = bestFitness;
+            var phenotype = bestChromosome.ToFloatingPoints();
+            var zip = phenotype.Zip(templateModel.Genes);
+            var stringBuilder = new StringBuilder($"Generation {ga.GenerationsNumber}:\n");
+            foreach (var (value, gene) in zip)
+            {
+                stringBuilder.Append("| ");
+                stringBuilder.Append(gene.Key);
+                stringBuilder.Append(" = ");
+                stringBuilder.Append(value);
+                stringBuilder.Append('\n');
+            }
+            stringBuilder.Append("F = ");
+            stringBuilder.Append(bestFitness);
+            logger.LogDebug("New population best \n{b}\n===> {p}", stringBuilder.ToString(), reportPath);
+            File.WriteAllText(reportPath, stringBuilder.ToString());
         }
-        stringBuilder.Append("F = ");
-        stringBuilder.Append(bestFitness);
-        stringBuilder.Append("\n\n");
-        logger.LogDebug("{s}", stringBuilder.ToString());
-        logger.LogInformation("Generation {g} running...", ga.GenerationsNumber + 1);
+        logger.LogInformation("\n{d}\nGeneration {g} running...", new string('-', 50), ga.GenerationsNumber + 1);
     }
 }

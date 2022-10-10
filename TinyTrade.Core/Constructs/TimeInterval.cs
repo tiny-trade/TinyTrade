@@ -43,7 +43,7 @@ public class TimeInterval
         return periods;
     }
 
-    public override string? ToString() => fromYear.ToString("0000") + "-" + fromMonth.ToString("00") + "|" + toYear.ToString("0000") + "-" + toMonth.ToString("00");
+    public override string? ToString() => fromYear.ToString("0000") + "-" + fromMonth.ToString("00") + "_" + toYear.ToString("0000") + "-" + toMonth.ToString("00");
 
     private void Parse(string pattern)
     {

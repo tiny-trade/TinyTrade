@@ -8,5 +8,7 @@ public interface IStrategy
 
     void OnStart();
 
+    void Reset();
+
     void OnStop();
 }

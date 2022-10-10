@@ -39,7 +39,7 @@ public class BacktestDataframeProvider : IDataframeProvider
         httpClient = new HttpClient();
     }
 
-    public async Task Load(IProgress<IDataframeProvider.LoadProgress>? progress = null)
+    public virtual async Task Load(IProgress<IDataframeProvider.LoadProgress>? progress = null)
     {
         IDataframeProvider.LoadProgress prog = new IDataframeProvider.LoadProgress
         {
@@ -50,6 +50,7 @@ public class BacktestDataframeProvider : IDataframeProvider
             prog.Progress = v;
             progress?.Report(prog);
         });
+        progress?.Report(prog);
         await DownloadData(valueProgress);
         prog.Description = "Building dataframes";
         frames = await BuildDataFrames(valueProgress);
@@ -77,22 +78,27 @@ public class BacktestDataframeProvider : IDataframeProvider
             var periods = interval.GetPeriods();
             var val = 0;
 
-            await Parallel.ForEachAsync(periods, new ParallelOptions() { MaxDegreeOfParallelism = 16 }, async (p, token) =>
+            var toDownload = new List<(string, string)>();
+
+            foreach (var period in periods)
             {
-                var elem = p;
-                var fileName = $"{Paths.UserData}/{Pair.ForBinance()}-1m-{elem}.csv";
+                var fileName = $"{Paths.UserData}/{Pair.ForBinance()}-1m-{period}.csv";
                 if (!File.Exists(fileName))
                 {
-                    var archiveName = $"{Paths.Cache}/{Pair}-{elem}.zip";
+                    var archiveName = $"{Paths.Cache}/{Pair}-{period}.zip";
                     if (!File.Exists(archiveName))
                     {
-                        var url = GenerateUrlForSingle(Pair, elem);
-                        await httpClient.DownloadFile(url, archiveName);
+                        toDownload.Add((GenerateUrlForSingle(Pair, period), archiveName));
                     }
                     archives.Add(archiveName);
                 }
+            }
+
+            await Parallel.ForEachAsync(toDownload, new ParallelOptions() { MaxDegreeOfParallelism = 16 }, async (p, token) =>
+            {
+                await httpClient.DownloadFile(p.Item1, p.Item2);
                 Interlocked.Increment(ref val);
-                progress?.Report((float)val / (periods.Count() - 1));
+                progress?.Report((float)val / (toDownload.Count - 1));
             });
 
             for (var i = 0; i < archives.Count; i++)

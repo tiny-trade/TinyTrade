@@ -12,32 +12,53 @@ namespace TinyTrade.Core.DataProviders;
 /// </summary>
 public class ParallelBacktestDataframeProvider : BacktestDataframeProvider
 {
-    private readonly ConcurrentDictionary<Guid, int> indexesMap;
+    private readonly ConcurrentDictionary<Guid, Applicant> indexesMap;
 
-    internal ParallelBacktestDataframeProvider(TimeInterval interval, Pair pair, Timeframe timeframe) : base(interval, pair, timeframe)
+    private readonly int batchCount;
+    private readonly int[] batchIndexes;
+
+    internal ParallelBacktestDataframeProvider(TimeInterval interval, Pair pair, Timeframe timeframe, int batchCount = 1) : base(interval, pair, timeframe)
     {
-        indexesMap = new ConcurrentDictionary<Guid, int>();
+        indexesMap = new ConcurrentDictionary<Guid, Applicant>();
+        this.batchCount = batchCount;
+        batchIndexes = new int[this.batchCount];
     }
+
+    public override async Task Load(IProgress<IDataframeProvider.LoadProgress>? progress = null)
+    {
+        await base.Load(progress);
+
+        var elementsPerBatch = FramesCount / batchCount;
+        for (int i = 0; i < batchCount; i++)
+        {
+            batchIndexes[i] = i == batchCount - 1 ? FramesCount : elementsPerBatch * (i + 1);
+        }
+    }
+
+    public bool HasAnotherBatch(Guid identifier) => !indexesMap.TryGetValue(identifier, out var applicant) || applicant.currentBatch < batchCount - 1;
 
     public override async Task<DataFrame?> Next(Guid? identifier = null)
     {
         await Task.CompletedTask;
         if (identifier is null) return null;
         var id = (Guid)identifier;
-        if (!indexesMap.ContainsKey(id))
+        if (!indexesMap.TryGetValue(id, out var applicant))
         {
-            indexesMap.TryAdd(id, 0);
+            indexesMap.TryAdd(id, new Applicant());
             return frames[0];
         }
         else
         {
-            if (indexesMap.TryGetValue(id, out var index))
+            if (applicant.currentIndex >= FramesCount) return null;
+            if (applicant.currentIndex == batchIndexes[applicant.currentBatch])
             {
-                var res = index >= FramesCount ? null : frames[index];
-                indexesMap.TryUpdate(id, index + 1, index);
-                return res;
+                applicant.currentBatch++;
+                applicant.currentIndex++;
+                return null;
             }
-            return null;
+            var res = frames[applicant.currentIndex];
+            applicant.currentIndex++;
+            return res;
         }
     }
 
@@ -45,16 +66,28 @@ public class ParallelBacktestDataframeProvider : BacktestDataframeProvider
     {
         if (identifier is null) return;
         var id = (Guid)identifier;
-        _ = indexesMap.Remove(id, out _);
+        indexesMap.TryRemove(id, out _);
     }
 
     public override void Reset(Guid? identifier = null)
     {
         if (identifier is null) return;
         var id = (Guid)identifier;
-        if (indexesMap.TryGetValue(id, out var index))
+        if (indexesMap.TryGetValue(id, out var applicant))
         {
-            indexesMap.TryUpdate(id, 0, index);
+            applicant.currentBatch = 0;
+            applicant.currentIndex = 0;
+        }
+    }
+
+    private class Applicant
+    {
+        public int currentIndex;
+
+        public int currentBatch;
+
+        public Applicant()
+        {
         }
     }
 }

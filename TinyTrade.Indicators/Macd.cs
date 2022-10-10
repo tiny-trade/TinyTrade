@@ -23,6 +23,10 @@ public class Macd
         emaSignal.Reset();
     }
 
+    /// <summary>
+    /// </summary>
+    /// <param name="close"> </param>
+    /// <returns> (hist, fast, slow) </returns>
     public (float?, float?, float?) ComputeNext(float close)
     {
         var emaF = emaFast.ComputeNext(close);

@@ -20,6 +20,11 @@ internal class CleanupHostedService : IHostedService
     public Task StartAsync(CancellationToken cancellationToken)
     {
         // Launch a non-awaitable task that runs every secondsInterval seconds
+        Directory.CreateDirectory(Paths.Cache);
+        Directory.CreateDirectory(Paths.UserData);
+        Directory.CreateDirectory(Paths.Processes);
+        Directory.CreateDirectory(Paths.GeneticReports);
+
         Heartbeat(cancellationToken);
         return Task.CompletedTask;
     }

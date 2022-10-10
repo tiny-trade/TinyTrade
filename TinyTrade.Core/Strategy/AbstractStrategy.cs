@@ -37,6 +37,21 @@ public abstract class AbstractStrategy : IStrategy
     public virtual void OnStop()
     { }
 
+    /// <summary>
+    ///   Reset the status of all conditions of the strategy
+    /// </summary>
+    public virtual void Reset()
+    {
+        foreach (var c in longConditions)
+        {
+            c.Reset();
+        }
+        foreach (var c in shortConditions)
+        {
+            c.Reset();
+        }
+    }
+
     public async Task UpdateState(DataFrame frame)
     {
         Exchange.Tick(frame);

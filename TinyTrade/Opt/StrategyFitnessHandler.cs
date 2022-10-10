@@ -20,7 +20,7 @@ internal class StrategyFitnessEvaluator : IFitness
 
     public StrategyFitnessEvaluator(BacktestService backtestService, Pair pair, TimeInterval interval, OptimizableStrategyModel strategyModel, ILogger? logger = null)
     {
-        provider = DataframeProviderFactory.GetParallelBacktestDataframeProvider(interval, pair, Timeframe.FromFlag(strategyModel.Timeframe));
+        provider = DataframeProviderFactory.GetParallelBacktestDataframeProvider(interval, pair, Timeframe.FromFlag(strategyModel.Timeframe), interval.GetPeriods().Count());
         templateModel = strategyModel;
         this.backtestService = backtestService;
         this.logger = logger;
@@ -28,7 +28,7 @@ internal class StrategyFitnessEvaluator : IFitness
 
     public async Task Load()
     {
-        var bar = ConsoleProgressBar.Factory().Lenght(20).Build();
+        var bar = ConsoleProgressBar.Factory().Lenght(50).Build();
         var progress = new Progress<IDataframeProvider.LoadProgress>(p => bar.Report(p.Progress, p.Description));
         await provider.Load(progress);
         bar.Dispose();
@@ -49,23 +49,28 @@ internal class StrategyFitnessEvaluator : IFitness
         };
 
         var res = backtestService.RunParallelBacktest(provider, strategyChromosome.Id, evaluationModel).Result;
-        return res is null ? 0 : CalculateFitness((BacktestResultModel)res);
+        return res is null ? 0 : CalculateFitness(res);
     }
 
-    private static double CalculateFitness(BacktestResultModel resultModel)
+    private static double CalculateFitness(List<BacktestResultModel> resultModels)
     {
-        var a = 0.65F;
-        var g = 4F;
-        var d = 1.75F;
-        var r = resultModel.FinalBalance / resultModel.InitialBalance;
-        var wr = resultModel.WinRate;
-        var r_penalize = 1F;
-        var wr_penalize = 1F;
-        if (r < 1) r_penalize = (float)Math.Pow(r, g);
-        if (wr < 0.5F) wr_penalize = (float)Math.Pow(wr + 0.5F, d);
-        var fac2 = r_penalize * Math.Pow(r + 1, a);
-        var fac3 = wr_penalize * Math.Pow(wr + 1, 1 - a);
-        var res = fac2 + fac3;
-        return 365 * (res / resultModel.Days);
+        double totalFitness = 0;
+        foreach (var resultModel in resultModels)
+        {
+            var a = 0.65F;
+            var g = 4F;
+            var d = 1.75F;
+            var r = resultModel.FinalBalance / resultModel.InitialBalance;
+            var wr = resultModel.WinRate;
+            var r_penalize = 1F;
+            var wr_penalize = 1F;
+            if (r < 1) r_penalize = (float)Math.Pow(r, g);
+            if (wr < 0.5F) wr_penalize = (float)Math.Pow(wr + 0.5F, d);
+            var fac2 = r_penalize * Math.Pow(r + 1, a);
+            var fac3 = wr_penalize * Math.Pow(wr + 1, 1 - a);
+            var res = fac2 + fac3;
+            totalFitness += 365 * (res / resultModel.Days);
+        }
+        return totalFitness;
     }
 }
