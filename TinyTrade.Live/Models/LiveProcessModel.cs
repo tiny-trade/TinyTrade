@@ -1,15 +1,21 @@
-﻿using CryptoExchange.Net.CommonObjects;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using TinyTrade.Core.Shared;
 
-namespace TinyTrade.Core.Models;
+namespace TinyTrade.Live.Models;
 
-public class LiveProcessModel
+internal class LiveProcessModel
 {
     [JsonProperty("pid")]
     public int Pid { get; private set; }
 
+    [JsonConverter(typeof(StringEnumConverter))]
     [JsonProperty("mode")]
-    public string Mode { get; init; } = null!;
+    public RunMode Mode { get; init; }
+
+    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonProperty("exchange")]
+    public Exchange Exchange { get; init; }
 
     [JsonProperty("strategy")]
     public string Strategy { get; init; } = null!;
@@ -23,7 +29,7 @@ public class LiveProcessModel
     [JsonProperty("openPositions")]
     public int OpenPositions { get; init; }
 
-    public LiveProcessModel(int pid, string mode, string strategy, string pair, float balance, int openPosition)
+    public LiveProcessModel(int pid, RunMode mode, Exchange exchange, string strategy, string pair, float balance, int openPosition)
     {
         Pid = pid;
         Mode = mode;

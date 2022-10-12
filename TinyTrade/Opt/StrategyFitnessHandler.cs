@@ -57,8 +57,8 @@ internal class StrategyFitnessEvaluator : IFitness
         double totalFitness = 0;
         foreach (var resultModel in resultModels)
         {
-            var a = 0.65F;
-            var g = 4F;
+            var a = 0.7F;
+            var g = 4.5F;
             var d = 1.75F;
             var r = resultModel.FinalBalance / resultModel.InitialBalance;
             var wr = resultModel.WinRate;

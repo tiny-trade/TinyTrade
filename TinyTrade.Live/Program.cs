@@ -1,24 +1,17 @@
 ﻿// args passed: "mode" "strategy file" "pair"
 
-using HandierCli.CLI;
 using HandierCli.Log;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using TinyTrade.Core.Constructs;
 using TinyTrade.Core.Exchanges;
 using TinyTrade.Core.Models;
-using TinyTrade.Core.Statics;
-using TinyTrade.Core.Strategy;
+using TinyTrade.Core.Shared;
 using TinyTrade.Live.Modes;
-using TinyTrade.Statics;
 using TinyTrade.Strategies.Link;
 
 TinyTradeStrategiesAssembly.DummyLink();
 // Create the args handler for matching arguments
-var handler = ArgumentsHandler.Factory()
-                .Mandatory("mode", new string[] { "foretest", "live" })
-                .Mandatory("strategy file", @".json$")
-                .Mandatory("pair symbol", @"[A-Z]+-USDT$").Build();
+var handler = ArgumentsHandlerFactory.ForRun().Build();
 
 var logger = new AdvancedLogger();
 
@@ -35,6 +28,7 @@ if (!res.Successful)
 var mode = handler.GetPositional(0);
 var strategyFile = handler.GetPositional(1);
 var pair = handler.GetPositional(2);
+var exchangeStr = handler.GetPositional(3);
 
 // Handle errors
 if (!File.Exists(strategyFile))
@@ -48,8 +42,9 @@ if (strategyModel is null)
 }
 try
 {
+    var exchange = Enum.Parse<Exchange>(exchangeStr, true);
     var runMode = Enum.Parse<RunMode>(mode, true);
-    var run = new BaseRun(runMode, Pair.Parse(pair), Timeframe.FromFlag(strategyModel.Timeframe), strategyModel, logger);
+    var run = new BaseRun(runMode, exchange, Pair.Parse(pair), Timeframe.FromFlag(strategyModel.Timeframe), strategyModel, logger);
     var trait = strategyModel.Traits.MaxBy(p => p.Value);
     await run.RunAsync(trait is null ? 0 : (int)trait.Value!);
 }

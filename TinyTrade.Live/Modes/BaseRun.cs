@@ -4,17 +4,13 @@ using TinyTrade.Core.Constructs;
 using TinyTrade.Core.DataProviders;
 using TinyTrade.Core.Exchanges;
 using TinyTrade.Core.Models;
+using TinyTrade.Core.Shared;
 using TinyTrade.Core.Statics;
 using TinyTrade.Core.Strategy;
+using TinyTrade.Live.Models;
 using TinyTrade.Statics;
 
 namespace TinyTrade.Live.Modes;
-
-internal enum RunMode
-{
-    Foretest,
-    Live
-}
 
 internal class BaseRun
 {
@@ -22,6 +18,7 @@ internal class BaseRun
 
     private readonly IStrategy strategy;
     private readonly RunMode mode;
+    private readonly Exchange exchange;
 
     protected StrategyModel StrategyModel { get; private set; }
 
@@ -31,17 +28,24 @@ internal class BaseRun
 
     protected Pair Pair { get; private set; }
 
-    public BaseRun(RunMode mode, Pair pair, Timeframe timeframe, StrategyModel strategyModel, ILogger? logger = null)
+    public BaseRun(RunMode mode, Exchange exchange, Pair pair, Timeframe timeframe, StrategyModel strategyModel, ILogger? logger = null)
     {
-        dataframeProvider = DataframeProviderFactory.GetExchangeDataframeProvider(Exchange.Kucoin, timeframe, pair);
+        dataframeProvider = DataframeProviderFactory.GetExchangeDataframeProvider(exchange, timeframe, pair);
         this.mode = mode;
-        this.Pair = pair;
-        this.StrategyModel = strategyModel;
+        this.exchange = exchange;
+        Pair = pair;
+        StrategyModel = strategyModel;
         ExchangeInterface = GetExchange(mode, logger);
         Logger = logger;
-        var cParams = new StrategyConstructorParameters()
-        { Exchange = ExchangeInterface, Logger = logger, Parameters = strategyModel.Parameters, Traits = strategyModel.Traits };
-        StrategyResolver.TryResolveStrategy(strategyModel.Name, cParams, out strategy);
+        StrategyResolver.TryResolveStrategy(
+            strategyModel.Name,
+            new StrategyConstructorParameters()
+            {
+                Exchange = ExchangeInterface,
+                Logger = logger,
+                Parameters = strategyModel.Parameters,
+                Traits = strategyModel.Traits
+            }, out strategy);
     }
 
     public async Task RunAsync(int preloadCandles = 0)
@@ -75,12 +79,14 @@ internal class BaseRun
         {
             var model = new LiveProcessModel(
                 Environment.ProcessId,
-                mode.ToString(),
+                mode,
+                exchange,
                 StrategyModel.Name,
                 Pair.ForKucoin(),
                 await ExchangeInterface.GetTotalBalanceAsync(),
                 await ExchangeInterface.GetOpenPositionsNumberAsync());
 
+            Directory.CreateDirectory(Paths.Processes);
             var serialized = JsonConvert.SerializeObject(model, Formatting.Indented);
             var path = Path.Join(Paths.Processes, model.Pid.ToString() + ".json");
             File.WriteAllText(path, serialized);
