@@ -37,8 +37,8 @@ internal class OptimizeService
             {
                 var current = strategyModel.Genes[i];
                 minValues[i] = current.Min is null ? double.NegativeInfinity : (double)current.Min;
-                maxValues[i] = current.Max is null ? double.NegativeInfinity : (double)current.Max;
-                fractionDigits[i] = current.Type is GeneType.Float ? 3 : 0;
+                maxValues[i] = current.Max is null ? double.PositiveInfinity : (double)current.Max;
+                fractionDigits[i] = current.Type is GeneType.Float ? 2 : 0;
                 var stringRepr = Convert.ToString(Convert.ToInt64(maxValues[i] * Math.Pow(10.0, fractionDigits[i])), 2);
                 bits[i] = stringRepr.Length;
                 values.Add(current.Value);
@@ -54,17 +54,17 @@ internal class OptimizeService
             var fitness = new StrategyFitnessEvaluator(backtestService, pair, interval, strategyModel, logger);
             await fitness.Load();
 
-            var selection = new TournamentSelection(16, true);
-            var population = new Population(128, 256, chromosome);
+            var selection = new RankSelection();
+            var population = new Population(128, 192, chromosome);
             var crossover = new UniformCrossover();// new VotingRecombinationCrossover(8, 4);
             var mutation = new UniformMutation(true);
-            var termination = new FitnessStagnationTermination(16);// new GenerationNumberTermination(200);
-            var taskExecutor = new ParallelTaskExecutor { MinThreads = 2, MaxThreads = 32 };
+            var termination = new FitnessStagnationTermination(128);// new GenerationNumberTermination(200);
+            var taskExecutor = new ParallelTaskExecutor { MinThreads = 4, MaxThreads = 32 };
             ga = new GeneticAlgorithm(population, fitness, selection, crossover, mutation)
             {
                 Termination = termination,
                 TaskExecutor = taskExecutor,
-                MutationProbability = 0.25F
+                MutationProbability = 0.15F
             };
             ga.GenerationRan += GenerationReport;
             logger.LogInformation("Generation {g} running...", 0);

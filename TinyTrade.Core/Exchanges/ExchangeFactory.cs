@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using TinyTrade.Core.Exchanges.Offline;
+using TinyTrade.Core.Shared;
 
 namespace TinyTrade.Core.Exchanges;
 

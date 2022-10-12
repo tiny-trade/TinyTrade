@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using TinyTrade.Core.Constructs;
+using TinyTrade.Core.Shared;
 using TinyTrade.Opt;
 
 namespace TinyTrade.Services.Hosted;
@@ -41,10 +42,7 @@ internal class CommandLineHostedService : IHostedService
     {
         cli.Register(Command.Factory("backtest")
             .Description("run a simulation on historical market data")
-            .WithArguments(ArgumentsHandler.Factory()
-                .Mandatory("strategy file", @".json$")
-                .Mandatory("interval pattern", @"20[1-2][0-9]-[0-1][0-9]|20[1-2][0-9]-[0-1][0-9]")
-                .Mandatory("pair symbol", @"[A-Z]+-USDT$"))
+            .WithArguments(ArgumentsHandlerFactory.ForBacktest())
             .AddAsync(async handler =>
             {
                 var service = services.GetRequiredService<BacktestService>();
@@ -62,20 +60,21 @@ internal class CommandLineHostedService : IHostedService
 
         cli.Register(Command.Factory("run")
             .Description("run a foretest simulation or a live trading session")
-            .WithArguments(ArgumentsHandler.Factory()
-                .Mandatory("mode", new string[] { "foretest", "live" })
-                .Mandatory("strategy file", @".json$")
-                .Mandatory("pair symbol", @"USDT$"))
+            .WithArguments(ArgumentsHandlerFactory.ForRun())
             .AddAsync(async handler =>
             {
                 logger.LogDebug("Simulating running");
                 var service = services.GetRequiredService<RunService>();
-                await service.RunLive(handler.GetPositional(0), handler.GetPositional(1), handler.GetPositional(2));
+                var runMode = Enum.Parse<RunMode>(handler.GetPositional(0), true);
+                var strategyFile = handler.GetPositional(1);
+                var pair = handler.GetPositional(2);
+                var exchange = Enum.Parse<Exchange>(handler.GetPositional(3), true);
+                await service.RunLive(runMode, exchange, strategyFile, pair);
             }));
 
         cli.Register(Command.Factory("snap")
             .Description("look for active foretest simulations or live sessions currently running")
-            .WithArguments(ArgumentsHandler.Factory())
+            .WithArguments(ArgumentsHandlerFactory.ForSnap())
             .Add(handler =>
             {
                 logger.LogDebug("Simulating snapping");
@@ -85,10 +84,7 @@ internal class CommandLineHostedService : IHostedService
 
         cli.Register(Command.Factory("optimize")
            .Description("optimize strategies")
-           .WithArguments(ArgumentsHandler.Factory()
-                .Mandatory("strategy file", @".json$")
-                .Mandatory("interval pattern", @"20[1-2][0-9]-[0-1][0-9]|20[1-2][0-9]-[0-1][0-9]")
-                .Mandatory("pair symbol", @"[A-Z]+-USDT$"))
+           .WithArguments(ArgumentsHandlerFactory.ForOptimize())
            .AddAsync(async handler =>
            {
                var service = services.GetRequiredService<OptimizeService>();

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using TinyTrade.Core.Shared;
 
 namespace TinyTrade.Services;
 
@@ -14,7 +15,7 @@ internal class RunService
         logger = loggerProvider.CreateLogger(string.Empty);
     }
 
-    public async Task RunLive(string mode, string strategyFile, string pair)
+    public async Task RunLive(RunMode mode, Exchange exchange, string strategyFile, string pair)
     {
         await Task.CompletedTask;
         try
@@ -27,7 +28,7 @@ internal class RunService
             var startInfo = new ProcessStartInfo
             {
                 FileName = LiveExecutable + GetOsSuffix(),
-                Arguments = $"{mode} {strategyFile} {pair}",
+                Arguments = $"{mode.ToString().ToLower()} {strategyFile} {pair} {exchange.ToString().ToLower()}",
                 RedirectStandardOutput = true,
                 UserName = null,
             };
@@ -42,7 +43,8 @@ internal class RunService
             if (res is not null)
             {
                 res.EnableRaisingEvents = true;
-                logger.LogInformation("Launched live process [{pid}] in {m} mode with {s} on {p}", res.Id, mode, strategyFile, pair);
+                res.Exited += (s, a) => RunProcessTerminated(res);
+                logger.LogInformation("Launched live process: [{pid}]\nMode {m}\nStrategy: {s}\nPair: {p}\nExchange {e}", res.Id, mode, strategyFile, pair, exchange);
             }
             else
             {
@@ -53,6 +55,11 @@ internal class RunService
         {
             logger.LogError("Exception captured: {e}", e.Message);
         }
+    }
+
+    private void RunProcessTerminated(Process process)
+    {
+        logger.LogWarning("Run process {pid} has terminated with exit code {c}", process.Id, process.ExitCode);
     }
 
     private string GetOsSuffix() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;

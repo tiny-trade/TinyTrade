@@ -1,5 +1,5 @@
 ﻿using TinyTrade.Core.Constructs;
-using TinyTrade.Core.Exchanges;
+using TinyTrade.Core.Shared;
 
 namespace TinyTrade.Core.DataProviders;
 

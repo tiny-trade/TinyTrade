@@ -40,7 +40,8 @@ public class AtrStochRsiEmaStrategy : AbstractStrategy
         AddLongCondition(new EventCondition(f =>
         {
             var stoch = stochRsi.Last;
-            return stoch is not (null, null) && lastStochK is not null && lastStochD is not null && lastStochK <= lastStochD && stoch.Item1 > stoch.Item2;
+            return stoch is not (null, null) && lastStochK is not null && lastStochD is not null &&
+            lastStochK <= lastStochD && stoch.Item1 > stoch.Item2 && stoch.Item2 < 30;
         }, intervalTolerance));
 
         AddShortCondition(new PerpetualCondition(f =>
@@ -48,7 +49,8 @@ public class AtrStochRsiEmaStrategy : AbstractStrategy
         AddShortCondition(new EventCondition(f =>
         {
             var stoch = stochRsi.Last;
-            return stoch is not (null, null) && lastStochK is not null && lastStochD is not null && lastStochK >= lastStochD && stoch.Item1 < stoch.Item2;
+            return stoch is not (null, null) && lastStochK is not null && lastStochD is not null &&
+            lastStochK >= lastStochD && stoch.Item1 < stoch.Item2 && stoch.Item2 > 70;
         }, intervalTolerance));
     }
 
