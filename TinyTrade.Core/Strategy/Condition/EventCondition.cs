@@ -17,12 +17,16 @@ public class EventCondition : Condition
 
     public override void Tick(DataFrame frame)
     {
-        if (!IsSatisfied && callback(frame))
+        var status = callback(frame);
+        if (status)
         {
-            IsSatisfied = true;
-            currentTolerance = 0;
+            if (!IsSatisfied)
+            {
+                IsSatisfied = true;
+                currentTolerance = 0;
+            }
         }
-        else
+        else if (IsSatisfied)
         {
             IsSatisfied = currentTolerance <= tolerance;
         }

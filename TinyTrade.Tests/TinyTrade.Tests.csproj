@@ -6,6 +6,10 @@
     <Nullable>enable</Nullable>
 
     <IsPackable>false</IsPackable>
+
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+
+    <Configurations>Debug;Release;Base</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

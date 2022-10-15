@@ -58,6 +58,7 @@ internal class BacktestService
                                     provider.Timeframe,
                                     exchange.InitialBalance,
                                     exchange.GetTotalBalance(),
+                                    exchange.TotalFees,
                                     provider.FramesCount,
                                     watch.ElapsedMilliseconds);
                 strategy.Reset();
@@ -110,6 +111,7 @@ internal class BacktestService
                     provider.Timeframe,
                     exchange.InitialBalance,
                     exchange.GetTotalBalance(),
+                    exchange.TotalFees,
                     provider.FramesCount,
                     watch.ElapsedMilliseconds);
         }

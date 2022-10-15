@@ -12,18 +12,22 @@ public class OfflineExchange : IExchange
 {
     private readonly ILogger? logger;
     private readonly Dictionary<Guid, OfflinePosition> openPositions;
+    private readonly double operationFee;
     private double balance;
     private double availableBalance;
+
+    public double TotalFees { get; private set; } = 0D;
 
     public float InitialBalance { get; private set; }
 
     public List<OfflinePosition> ClosedPositions { get; private set; }
 
-    public OfflineExchange(float balance = 100, ILogger? logger = null)
+    public OfflineExchange(float balance = 100, double operationFee = 0.001D, ILogger? logger = null)
     {
         openPositions = new Dictionary<Guid, OfflinePosition>();
         this.logger = logger;
         this.balance = balance;
+        this.operationFee = operationFee;
         availableBalance = balance;
         InitialBalance = balance;
         ClosedPositions = new List<OfflinePosition>();
@@ -36,11 +40,12 @@ public class OfflineExchange : IExchange
         openPositions.Clear();
     }
 
-    public void OpenPosition(OrderSide side, float openPrice, float stopLoss, float takeProfit, float stake, int leverage)
+    public void OpenPosition(OrderSide side, float openPrice, float stopLoss, float takeProfit, float margin, int leverage)
     {
-        if (availableBalance < stake || availableBalance < 0) return;
-        availableBalance -= stake;
-        var pos = new OfflinePosition(side, openPrice, takeProfit, stopLoss, stake, leverage);
+        if (availableBalance < margin || availableBalance < 0) return;
+        availableBalance -= margin;
+        PayFee(margin);
+        var pos = new OfflinePosition(side, openPrice, takeProfit, stopLoss, margin, leverage);
         openPositions.Add(Guid.NewGuid(), pos);
     }
 
@@ -77,8 +82,7 @@ public class OfflineExchange : IExchange
             if (p.Value.TryClose(dataFrame.Close))
             {
                 balance += p.Value.NetProfit;
-                if (balance < 0)
-                    Console.WriteLine("less");
+                PayFee(p.Value.Margin);
                 availableBalance += p.Value.Margin + p.Value.NetProfit;
                 remove.Add(p.Key);
                 ClosedPositions.Add(p.Value);
@@ -95,4 +99,11 @@ public class OfflineExchange : IExchange
     public int GetOpenPositionsNumber() => openPositions.Count;
 
     public double GetTotalBalance() => balance;
+
+    private void PayFee(float margin)
+    {
+        var fee = margin * operationFee;
+        TotalFees += fee;
+        balance -= fee;
+    }
 }

@@ -27,6 +27,8 @@ public class OfflinePosition
 
     public float ResultRatio { get; private set; }
 
+    public float Fee { get; private set; }
+
     public double NetProfit { get; private set; }
 
     public OfflinePosition(OrderSide side, float openPrice, float takeProfit, float stopLoss, float margin, int leverage = 1)

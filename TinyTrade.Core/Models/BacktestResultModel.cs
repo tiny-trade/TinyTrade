@@ -30,14 +30,17 @@ public struct BacktestResultModel
 
     public double ProfitPercentage { get; private set; }
 
+    public double TotalFees { get; private set; }
+
     public int LiquidatedPositions { get; private set; }
 
-    public BacktestResultModel(List<OfflinePosition> positions, Timeframe timeframe, double initialBalance, double finalBalance, int candles, long elapsedMillis)
+    public BacktestResultModel(List<OfflinePosition> positions, Timeframe timeframe, double initialBalance, double finalBalance, double totalFees, int candles, long elapsedMillis)
     {
         Frames = candles * timeframe.Minutes;
         Candles = candles;
         ElapsedMillis = elapsedMillis;
         Timeframe = timeframe;
+        TotalFees = totalFees;
         Days = candles / 1440;
         InitialBalance = initialBalance;
         FinalBalance = finalBalance;

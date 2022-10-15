@@ -37,21 +37,25 @@ public class AtrStochRsiEmaStrategy : AbstractStrategy
         stochRsi = new StochRsi();
 
         AddLongCondition(new PerpetualCondition(f =>
-            ema1.Last is not null && ema2.Last is not null && ema3.Last is not null && ema3.Last < ema2.Last && ema2.Last < ema1.Last && ema1.Last < f.Close));
+            ema1.Last is not null && ema2.Last is not null && ema3.Last is not null && stochRsi.Last is not (null, null) &&
+            stochRsi.Last.Item1 < 30 && stochRsi.Last.Item1 > stochRsi.Last.Item2 &&
+            ema3.Last < ema2.Last && ema2.Last < ema1.Last && ema1.Last < f.Close));
         AddLongCondition(new EventCondition(f =>
         {
             var stoch = stochRsi.Last;
             return stoch is not (null, null) && lastStochK is not null && lastStochD is not null &&
-            lastStochK <= lastStochD && stoch.Item1 > stoch.Item2 && stoch.Item2 < 30;
+            lastStochK < lastStochD && stoch.Item1 > stoch.Item2 && stoch.Item2 < 30;
         }, intervalTolerance));
 
         AddShortCondition(new PerpetualCondition(f =>
-            ema1.Last is not null && ema2.Last is not null && ema3.Last is not null && ema3.Last > ema2.Last && ema2.Last > ema1.Last && ema1.Last > f.Close));
+            ema1.Last is not null && ema2.Last is not null && ema3.Last is not null && stochRsi.Last is not (null, null) &&
+            stochRsi.Last.Item1 > 70 && stochRsi.Last.Item1 < stochRsi.Last.Item2 &&
+            ema3.Last > ema2.Last && ema2.Last > ema1.Last && ema1.Last > f.Close));
         AddShortCondition(new EventCondition(f =>
         {
             var stoch = stochRsi.Last;
             return stoch is not (null, null) && lastStochK is not null && lastStochD is not null &&
-            lastStochK >= lastStochD && stoch.Item1 < stoch.Item2 && stoch.Item2 > 70;
+            lastStochK > lastStochD && stoch.Item1 < stoch.Item2 && stoch.Item2 > 70;
         }, intervalTolerance));
     }
 
@@ -59,7 +63,7 @@ public class AtrStochRsiEmaStrategy : AbstractStrategy
 
     protected override float GetStopLoss(OrderSide side, DataFrame frame)
     {
-        var ratio = (float)(atrFactor * atr.Last / Leverage)!;
+        var ratio = (float)(atrFactor * atr.Last)!;
         return side switch
         {
             OrderSide.Buy => frame.Close - ratio,
@@ -70,7 +74,7 @@ public class AtrStochRsiEmaStrategy : AbstractStrategy
 
     protected override float GetTakeProfit(OrderSide side, DataFrame frame)
     {
-        var ratio = (float)(atrFactor * atr.Last / Leverage)!;
+        var ratio = (float)(atrFactor * atr.Last)!;
         return side switch
         {
             OrderSide.Buy => frame.Close + (ratio * riskRewardRatio),
