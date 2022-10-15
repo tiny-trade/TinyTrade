@@ -4,9 +4,10 @@ using HandierCli.Statics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using TinyTrade.Core.Constructs;
+using TinyTrade.Core.Models;
 using TinyTrade.Core.Shared;
+using TinyTrade.Core.Statics;
 using TinyTrade.Opt;
 
 namespace TinyTrade.Services.Hosted;
@@ -49,13 +50,23 @@ internal class CommandLineHostedService : IHostedService
                 var strategyFile = handler.GetPositional(0);
                 var intervalPattern = handler.GetPositional(1);
                 var pair = handler.GetPositional(2);
-                var strategyModel = JsonConvert.DeserializeObject<OptimizableStrategyModel>(File.ReadAllText(strategyFile));
+                var strategyModel = SerializationHandler.Deserialize<OptimizableStrategyModel>(File.ReadAllText(strategyFile));
                 if (strategyModel is null)
                 {
                     logger.LogError("Unable to deserialize {s} file", strategyFile);
                     return;
                 }
                 var result = await service.RunBacktest(Pair.Parse(pair), intervalPattern, strategyModel);
+                if (result is null)
+                {
+                    logger.LogError("Result is null, something went really bad X(");
+                }
+                else
+                {
+                    var model = (BacktestResultModel)result;
+                    logger.LogTrace("Processed {c} klines in just {ms}ms O.O - Hail to the C#!", model.Frames, model.ElapsedMillis);
+                    logger.LogInformation("Evaluation result:\n{r}", SerializationHandler.Serialize(model));
+                }
             }));
 
         cli.Register(Command.Factory("run")
@@ -91,7 +102,7 @@ internal class CommandLineHostedService : IHostedService
                var strategyFile = handler.GetPositional(0);
                var intervalPattern = handler.GetPositional(1);
                var pair = handler.GetPositional(2);
-               var strategyModel = JsonConvert.DeserializeObject<OptimizableStrategyModel>(File.ReadAllText(strategyFile));
+               var strategyModel = SerializationHandler.Deserialize<OptimizableStrategyModel>(File.ReadAllText(strategyFile));
                if (strategyModel is null)
                {
                    logger.LogError("Unable to deserialize {s} file", strategyFile);

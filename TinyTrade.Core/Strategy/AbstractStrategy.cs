@@ -16,11 +16,14 @@ public abstract class AbstractStrategy : IStrategy
 
     protected IExchange Exchange { get; private set; }
 
+    protected int Leverage { get; private set; }
+
     protected AbstractStrategy(StrategyConstructorParameters parameters)
     {
         Logger = parameters.Logger;
         Exchange = parameters.Exchange;
         MaxConcurrentPositions = Convert.ToInt32(parameters.Parameters.GetValueOrDefault("maxConcurrentPositions", 1));
+        Leverage = Convert.ToInt32(parameters.Parameters.GetValueOrDefault("leverage", 1));
         shortConditions = new List<Condition>();
         longConditions = new List<Condition>();
     }
@@ -57,7 +60,7 @@ public abstract class AbstractStrategy : IStrategy
         Exchange.Tick(frame);
         if (frame.IsClosed)
         {
-            Tick(frame);
+            await Tick(frame);
             foreach (var c in shortConditions)
             {
                 c.Tick(frame);
@@ -74,13 +77,13 @@ public abstract class AbstractStrategy : IStrategy
             var balance = balanceTask.Result;
             if (openPositions < MaxConcurrentPositions && balance > 0)
             {
-                var stake = balance * GetStakeAmount();
+                var stake = GetStakeAmount();
 
                 if (longConditions.Count > 0 && longConditions.All(c => c.IsSatisfied))
                 {
                     var side = OrderSide.Buy;
 
-                    await Exchange.OpenPositionAsync(side, frame.Close, GetStopLoss(side, frame), GetTakeProfit(side, frame), stake);
+                    await Exchange.OpenPositionAsync(side, frame.Close, GetStopLoss(side, frame), GetTakeProfit(side, frame), (float)stake, Leverage);
                     longConditions.ForEach(c => c.Reset());
                 }
 
@@ -88,7 +91,7 @@ public abstract class AbstractStrategy : IStrategy
                 {
                     var side = OrderSide.Sell;
 
-                    await Exchange.OpenPositionAsync(side, frame.Close, GetStopLoss(side, frame), GetTakeProfit(side, frame), stake);
+                    await Exchange.OpenPositionAsync(side, frame.Close, GetStopLoss(side, frame), GetTakeProfit(side, frame), (float)stake, Leverage);
                     shortConditions.ForEach(c => c.Reset());
                 }
             }
@@ -123,6 +126,5 @@ public abstract class AbstractStrategy : IStrategy
     ///   Called each time a closed candle is received
     /// </summary>
     /// <param name="frame"> </param>
-    protected virtual void Tick(DataFrame frame)
-    { }
+    protected virtual Task Tick(DataFrame frame) => Task.CompletedTask;
 }

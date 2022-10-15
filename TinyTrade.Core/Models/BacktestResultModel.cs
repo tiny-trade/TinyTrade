@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using TinyTrade.Core.Constructs;
+﻿using TinyTrade.Core.Constructs;
 using TinyTrade.Core.Exchanges.Offline;
 
 namespace TinyTrade.Core.Models;
@@ -7,35 +6,37 @@ namespace TinyTrade.Core.Models;
 [Serializable]
 public struct BacktestResultModel
 {
-    [JsonProperty("days")]
     public float Days { get; private set; }
 
-    [JsonProperty("timeframe")]
     public string Timeframe { get; private set; }
 
-    [JsonProperty("initialBalance")]
-    public float InitialBalance { get; private set; }
+    public int Candles { get; private set; }
 
-    [JsonProperty("finalBalance")]
-    public float FinalBalance { get; private set; }
+    public int Frames { get; private set; }
 
-    [JsonProperty("profit")]
-    public float Profit { get; private set; }
+    public long ElapsedMillis { get; private set; }
 
-    [JsonProperty("winRate")]
+    public double InitialBalance { get; private set; }
+
+    public double FinalBalance { get; private set; }
+
+    public double Profit { get; private set; }
+
     public float WinRate { get; private set; }
 
-    [JsonProperty("estimatedApy")]
-    public float EstimatedApy { get; private set; }
+    public double EstimatedApy { get; private set; }
 
-    [JsonProperty("closedPositions")]
     public int ClosedPositions { get; private set; }
 
-    [JsonProperty("profitPercentage")]
-    public float ProfitPercentage { get; private set; }
+    public double ProfitPercentage { get; private set; }
 
-    public BacktestResultModel(List<OfflinePosition> positions, Timeframe timeframe, float initialBalance, float finalBalance, int candles)
+    public int LiquidatedPositions { get; private set; }
+
+    public BacktestResultModel(List<OfflinePosition> positions, Timeframe timeframe, double initialBalance, double finalBalance, int candles, long elapsedMillis)
     {
+        Frames = candles * timeframe.Minutes;
+        Candles = candles;
+        ElapsedMillis = elapsedMillis;
         Timeframe = timeframe;
         Days = candles / 1440;
         InitialBalance = initialBalance;
@@ -48,7 +49,8 @@ public struct BacktestResultModel
         positions.ForEach(p => totPerc += p.ResultRatio);
         totPerc = positions.Count <= 0 ? 0 : totPerc / positions.Count;
         ClosedPositions = positions.Count;
-        EstimatedApy = (MathF.Pow(FinalBalance / InitialBalance, 365F / Days) - 1F) * 100;
+        EstimatedApy = (MathF.Pow((float)(FinalBalance / InitialBalance), 365F / Days) - 1F) * 100;
         EstimatedApy = EstimatedApy < -100 ? -100 : EstimatedApy;
+        LiquidatedPositions = positions.Count(p => p.Liquidated);
     }
 }

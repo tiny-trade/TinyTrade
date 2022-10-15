@@ -12,8 +12,8 @@ public class OfflineExchange : IExchange
 {
     private readonly ILogger? logger;
     private readonly Dictionary<Guid, OfflinePosition> openPositions;
-    private float balance;
-    private float availableBalance;
+    private double balance;
+    private double availableBalance;
 
     public float InitialBalance { get; private set; }
 
@@ -36,21 +36,21 @@ public class OfflineExchange : IExchange
         openPositions.Clear();
     }
 
-    public void OpenPosition(OrderSide side, float openPrice, float stopLoss, float takeProfit, float stake)
+    public void OpenPosition(OrderSide side, float openPrice, float stopLoss, float takeProfit, float stake, int leverage)
     {
-        if (availableBalance < stake) return;
+        if (availableBalance < stake || availableBalance < 0) return;
         availableBalance -= stake;
-        var pos = new OfflinePosition(side, openPrice, takeProfit, stopLoss, stake);
+        var pos = new OfflinePosition(side, openPrice, takeProfit, stopLoss, stake, leverage);
         openPositions.Add(Guid.NewGuid(), pos);
     }
 
-    async Task<float> IExchange.GetTotalBalanceAsync()
+    async Task<double> IExchange.GetTotalBalanceAsync()
     {
         await Task.CompletedTask;
         return GetTotalBalance();
     }
 
-    async Task<float> IExchange.GetAvailableBalanceAsync()
+    async Task<double> IExchange.GetAvailableBalanceAsync()
     {
         await Task.CompletedTask;
         return GetAvailableBalance();
@@ -62,10 +62,10 @@ public class OfflineExchange : IExchange
         return GetOpenPositionsNumber();
     }
 
-    async Task IExchange.OpenPositionAsync(OrderSide side, float openPrice, float stopLoss, float takeProfit, float stake)
+    async Task IExchange.OpenPositionAsync(OrderSide side, float openPrice, float stopLoss, float takeProfit, float stake, int leverage)
     {
         await Task.CompletedTask;
-        OpenPosition(side, openPrice, stopLoss, takeProfit, stake);
+        OpenPosition(side, openPrice, stopLoss, takeProfit, stake, leverage);
     }
 
     public void Tick(DataFrame dataFrame)
@@ -76,8 +76,10 @@ public class OfflineExchange : IExchange
             var p = openPositions.ElementAt(i);
             if (p.Value.TryClose(dataFrame.Close))
             {
-                balance += p.Value.Profit;
-                availableBalance += p.Value.Stake + p.Value.Profit;
+                balance += p.Value.NetProfit;
+                if (balance < 0)
+                    Console.WriteLine("less");
+                availableBalance += p.Value.Margin + p.Value.NetProfit;
                 remove.Add(p.Key);
                 ClosedPositions.Add(p.Value);
             }
@@ -88,9 +90,9 @@ public class OfflineExchange : IExchange
         }
     }
 
-    public float GetAvailableBalance() => availableBalance;
+    public double GetAvailableBalance() => availableBalance;
 
     public int GetOpenPositionsNumber() => openPositions.Count;
 
-    public float GetTotalBalance() => balance;
+    public double GetTotalBalance() => balance;
 }

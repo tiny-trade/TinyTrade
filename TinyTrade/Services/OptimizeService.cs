@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System.Text;
 using TinyTrade.Core.Constructs;
+using TinyTrade.Core.Statics;
 using TinyTrade.Opt;
 using TinyTrade.Statics;
 
@@ -14,6 +15,7 @@ internal class OptimizeService
     private GeneticAlgorithm? ga;
     private OptimizableStrategyModel? templateModel;
     private string? reportPath;
+    private string? modelPath;
     private double lastFitness = 0;
 
     public OptimizeService(BacktestService backtestService, ILoggerProvider loggerProvider)
@@ -26,16 +28,17 @@ internal class OptimizeService
     {
         try
         {
-            reportPath = $"{Paths.GeneticReports}/{pair.ForBinance()}_{interval}_{strategyModel.Name}.txt";
+            reportPath = $"{Paths.GeneticReports}/{pair.ForBinance()}_{interval}_{strategyModel.Strategy}.txt";
+            modelPath = $"{Paths.GeneticReports}/{pair.ForBinance()}_{interval}_{strategyModel.Strategy}.json";
             templateModel = strategyModel;
-            var minValues = new double[strategyModel.Genes.Count];
-            var maxValues = new double[strategyModel.Genes.Count];
-            var bits = new int[strategyModel.Genes.Count];
-            var fractionDigits = new int[strategyModel.Genes.Count];
+            var minValues = new double[strategyModel.Traits.Count];
+            var maxValues = new double[strategyModel.Traits.Count];
+            var bits = new int[strategyModel.Traits.Count];
+            var fractionDigits = new int[strategyModel.Traits.Count];
             var values = new List<double?>();
-            for (int i = 0; i < strategyModel.Genes.Count; i++)
+            for (int i = 0; i < strategyModel.Traits.Count; i++)
             {
-                var current = strategyModel.Genes[i];
+                var current = strategyModel.Traits[i];
                 minValues[i] = current.Min is null ? double.NegativeInfinity : (double)current.Min;
                 maxValues[i] = current.Max is null ? double.PositiveInfinity : (double)current.Max;
                 fractionDigits[i] = current.Type is GeneType.Float ? 2 : 0;
@@ -44,7 +47,7 @@ internal class OptimizeService
                 values.Add(current.Value);
             }
 
-            var chromosome =
+            IdFloatingPointChromosome? chromosome =
                 new IdFloatingPointChromosome(
                     Guid.NewGuid(),
                     minValues, maxValues,
@@ -55,10 +58,10 @@ internal class OptimizeService
             await fitness.Load();
 
             var selection = new RankSelection();
-            var population = new Population(128, 192, chromosome);
+            var population = new Population(96, 128, chromosome);
             var crossover = new UniformCrossover();// new VotingRecombinationCrossover(8, 4);
             var mutation = new UniformMutation(true);
-            var termination = new FitnessStagnationTermination(128);// new GenerationNumberTermination(200);
+            var termination = new FitnessStagnationTermination(16);// new GenerationNumberTermination(200);
             var taskExecutor = new ParallelTaskExecutor { MinThreads = 4, MaxThreads = 32 };
             ga = new GeneticAlgorithm(population, fitness, selection, crossover, mutation)
             {
@@ -79,15 +82,16 @@ internal class OptimizeService
 
     private void GenerationReport(object? sender, EventArgs args)
     {
-        if (templateModel is null || ga is null || string.IsNullOrEmpty(reportPath)) return;
+        if (templateModel is null || ga is null || string.IsNullOrEmpty(reportPath) || string.IsNullOrEmpty(modelPath)) return;
         if (ga.BestChromosome is not IdFloatingPointChromosome bestChromosome) return;
         var bestFitness = bestChromosome!.Fitness!.Value;
         if (lastFitness < bestFitness)
         {
             lastFitness = bestFitness;
             var phenotype = bestChromosome.ToFloatingPoints();
-            var zip = phenotype.Zip(templateModel.Genes);
+            var zip = phenotype.Zip(templateModel.Traits);
             var stringBuilder = new StringBuilder($"Generation {ga.GenerationsNumber}:\n");
+            var bestGenes = new List<StrategyGene>();
             foreach (var (value, gene) in zip)
             {
                 stringBuilder.Append("| ");
@@ -95,11 +99,20 @@ internal class OptimizeService
                 stringBuilder.Append(" = ");
                 stringBuilder.Append(value);
                 stringBuilder.Append('\n');
+                bestGenes.Add(new StrategyGene(gene.Key, (float)value, gene.Min, gene.Max, gene.Type));
             }
             stringBuilder.Append("F = ");
             stringBuilder.Append(bestFitness);
+            var bestModel = new OptimizableStrategyModel()
+            {
+                Strategy = templateModel.Strategy,
+                Parameters = templateModel.Parameters,
+                Timeframe = templateModel.Timeframe,
+                Traits = bestGenes
+            };
             logger.LogDebug("New population best \n{b}\n===> {p}", stringBuilder.ToString(), reportPath);
             File.WriteAllText(reportPath, stringBuilder.ToString());
+            File.WriteAllText(modelPath, SerializationHandler.Serialize(bestModel));
         }
         logger.LogInformation("\n{d}\nGeneration {g} running...", new string('-', 50), ga.GenerationsNumber + 1);
     }

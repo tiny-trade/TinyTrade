@@ -21,6 +21,7 @@ public class AtrStochRsiEmaStrategy : AbstractStrategy
     private readonly ILogger? logger;
     private float? lastStochK = null;
     private float? lastStochD = null;
+    private double? totalBalance = null;
 
     public AtrStochRsiEmaStrategy(StrategyConstructorParameters parameters) : base(parameters)
     {
@@ -54,11 +55,11 @@ public class AtrStochRsiEmaStrategy : AbstractStrategy
         }, intervalTolerance));
     }
 
-    protected override float GetStakeAmount() => stakePercentage;
+    protected override float GetStakeAmount() => totalBalance is null ? 0F : (float)(stakePercentage * totalBalance);
 
     protected override float GetStopLoss(OrderSide side, DataFrame frame)
     {
-        var ratio = (float)(atrFactor * atr.Last)!;
+        var ratio = (float)(atrFactor * atr.Last / Leverage)!;
         return side switch
         {
             OrderSide.Buy => frame.Close - ratio,
@@ -69,7 +70,7 @@ public class AtrStochRsiEmaStrategy : AbstractStrategy
 
     protected override float GetTakeProfit(OrderSide side, DataFrame frame)
     {
-        var ratio = (float)(atrFactor * atr.Last)!;
+        var ratio = (float)(atrFactor * atr.Last / Leverage)!;
         return side switch
         {
             OrderSide.Buy => frame.Close + (ratio * riskRewardRatio),
@@ -78,15 +79,14 @@ public class AtrStochRsiEmaStrategy : AbstractStrategy
         };
     }
 
-    protected override void Tick(DataFrame frame)
+    protected override async Task Tick(DataFrame frame)
     {
-        base.Tick(frame);
-
         atr.ComputeNext(frame.High, frame.Low, frame.Close);
         ema1.ComputeNext(frame.Close);
         ema2.ComputeNext(frame.Close);
         ema3.ComputeNext(frame.Close);
         (lastStochK, lastStochD) = stochRsi.Last;
         stochRsi.ComputeNext(frame.Close);
+        totalBalance = await Exchange.GetTotalBalanceAsync();
     }
 }

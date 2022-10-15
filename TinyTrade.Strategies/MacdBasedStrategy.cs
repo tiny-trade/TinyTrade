@@ -45,11 +45,12 @@ public class MacdBasedStrategy : AbstractStrategy
             lastHist > 0 && macd.Last.Item1 < 0 && macd.Last.Item2 > 0 && macd.Last.Item3 > 0));
     }
 
-    protected override void Tick(DataFrame frame)
+    protected override Task Tick(DataFrame frame)
     {
         ema.ComputeNext(frame.Close);
         (lastHist, _, _) = macd.Last;
         macd.ComputeNext(frame.Close);
+        return Task.CompletedTask;
     }
 
     protected override float GetStakeAmount() => stakePercentage;

@@ -23,6 +23,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bundle", "Bundle", "{347725
 		win-x64.bat = win-x64.bat
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyTrade.Tests", "TinyTrade.Tests\TinyTrade.Tests.csproj", "{93CFF5CB-0F35-4F35-A82D-8C223D464CDE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{D5B7D4D1-93D3-42C9-BA83-A416D12DB64F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5B7D4D1-93D3-42C9-BA83-A416D12DB64F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5B7D4D1-93D3-42C9-BA83-A416D12DB64F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93CFF5CB-0F35-4F35-A82D-8C223D464CDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93CFF5CB-0F35-4F35-A82D-8C223D464CDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93CFF5CB-0F35-4F35-A82D-8C223D464CDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93CFF5CB-0F35-4F35-A82D-8C223D464CDE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

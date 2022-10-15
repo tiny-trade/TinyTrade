@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using TinyTrade.Core.Constructs;
 using TinyTrade.Core.DataProviders;
 using TinyTrade.Core.Exchanges;
@@ -38,7 +37,7 @@ internal class BaseRun
         ExchangeInterface = GetExchange(mode, logger);
         Logger = logger;
         StrategyResolver.TryResolveStrategy(
-            strategyModel.Name,
+            strategyModel.Strategy,
             new StrategyConstructorParameters()
             {
                 Exchange = ExchangeInterface,
@@ -81,13 +80,13 @@ internal class BaseRun
                 Environment.ProcessId,
                 mode,
                 exchange,
-                StrategyModel.Name,
+                StrategyModel.Strategy,
                 Pair.ForKucoin(),
-                await ExchangeInterface.GetTotalBalanceAsync(),
+                (float)(await ExchangeInterface.GetTotalBalanceAsync()),
                 await ExchangeInterface.GetOpenPositionsNumberAsync());
 
             Directory.CreateDirectory(Paths.Processes);
-            var serialized = JsonConvert.SerializeObject(model, Formatting.Indented);
+            var serialized = SerializationHandler.Serialize(model);
             var path = Path.Join(Paths.Processes, model.Pid.ToString() + ".json");
             File.WriteAllText(path, serialized);
         }

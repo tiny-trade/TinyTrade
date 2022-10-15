@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using TinyTrade.Core.Statics;
 
 namespace TinyTrade.Core.Constructs;
 
@@ -32,5 +32,5 @@ public class DataFrame
         IsClosed = isClosed;
     }
 
-    public override string? ToString() => JsonConvert.SerializeObject(this, Formatting.Indented);
+    public override string? ToString() => SerializationHandler.Serialize(this);
 }

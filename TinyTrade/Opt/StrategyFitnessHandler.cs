@@ -38,11 +38,11 @@ internal class StrategyFitnessEvaluator : IFitness
     {
         if (chromosome is not IdFloatingPointChromosome strategyChromosome) return 0;
         var floats = strategyChromosome.ToFloatingPoints();
-        if (floats.Length != templateModel.Genes.Count) return 0;
-        var zip = templateModel.Genes.Zip(floats).ToList();
+        if (floats.Length != templateModel.Traits.Count) return 0;
+        var zip = templateModel.Traits.Zip(floats).ToList();
         var evaluationModel = new StrategyModel()
         {
-            Name = templateModel.Name,
+            Strategy = templateModel.Strategy,
             Parameters = templateModel.Parameters,
             Timeframe = templateModel.Timeframe,
             Traits = zip.ConvertAll(z => new Trait(z.First.Key, (float)z.Second))
@@ -57,7 +57,7 @@ internal class StrategyFitnessEvaluator : IFitness
         double totalFitness = 0;
         foreach (var resultModel in resultModels)
         {
-            var a = 0.7F;
+            var a = 0.45F;
             var g = 4.5F;
             var d = 1.75F;
             var r = resultModel.FinalBalance / resultModel.InitialBalance;
