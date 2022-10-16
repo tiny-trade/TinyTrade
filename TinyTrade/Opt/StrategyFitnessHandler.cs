@@ -60,15 +60,17 @@ internal class StrategyFitnessEvaluator : IFitness
             var a = 0.65F;
             var g = 4.75F;
             var d = 1.75F;
+            var c = 2.5F;
             var r = resultModel.FinalBalance / resultModel.InitialBalance;
             var wr = resultModel.WinRate;
             var r_penalize = 1F;
             var wr_penalize = 1F;
             if (r < 1) r_penalize = (float)Math.Pow(r, g);
             if (wr < 0.5F) wr_penalize = (float)Math.Pow(wr + 0.5F, d);
-            var fac2 = r_penalize * Math.Pow(r + 1, a);
-            var fac3 = wr_penalize * Math.Pow(wr + 1, 1 - a);
-            var res = fac2 + fac3;
+            var rFac = r_penalize * Math.Pow(r + 1, a);
+            var wrFac = wr_penalize * Math.Pow(wr + 1, 1 - a);
+            var feeFac = Math.Pow(resultModel.TotalFees + 1, c);
+            var res = rFac + wrFac - feeFac;
             totalFitness += 365 * (res / resultModel.Days);
         }
         return totalFitness;

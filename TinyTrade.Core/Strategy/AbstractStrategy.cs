@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using TinyTrade.Core.Constructs;
 using TinyTrade.Core.Exchanges;
+using TinyTrade.Indicators;
 
 namespace TinyTrade.Core.Strategy;
 
@@ -9,10 +10,13 @@ public abstract class AbstractStrategy : IStrategy
     private readonly List<Condition> shortConditions;
 
     private readonly List<Condition> longConditions;
+    private IEnumerable<Indicator>? indicators = null;
 
     public int MaxConcurrentPositions { get; init; }
 
     protected ILogger? Logger { get; private set; }
+
+    protected double? CachedTotalBalance { get; private set; }
 
     protected IExchange Exchange { get; private set; }
 
@@ -29,22 +33,16 @@ public abstract class AbstractStrategy : IStrategy
     }
 
     /// <summary>
-    ///   Called when a session starts
-    /// </summary>
-    public virtual void OnStart()
-    { }
-
-    /// <summary>
-    ///   Called when a session ends
-    /// </summary>
-    public virtual void OnStop()
-    { }
-
-    /// <summary>
     ///   Reset the status of all conditions of the strategy
     /// </summary>
-    public virtual void Reset()
+    public void Reset()
     {
+        ResetState();
+        indicators ??= GetIndicators();
+        foreach (var i in indicators)
+        {
+            i.Reset();
+        }
         foreach (var c in longConditions)
         {
             c.Reset();
@@ -55,11 +53,16 @@ public abstract class AbstractStrategy : IStrategy
         }
     }
 
+    /// <summary>
+    ///   Update the internal state of the strategy
+    /// </summary>
+    /// <returns> </returns>
     public async Task UpdateState(DataFrame frame)
     {
         Exchange.Tick(frame);
         if (frame.IsClosed)
         {
+            CachedTotalBalance = await Exchange.GetTotalBalanceAsync();
             await Tick(frame);
             foreach (var c in shortConditions)
             {
@@ -77,7 +80,7 @@ public abstract class AbstractStrategy : IStrategy
             var balance = balanceTask.Result;
             if (openPositions < MaxConcurrentPositions && balance > 0)
             {
-                var stake = GetStakeAmount();
+                var stake = GetMargin(frame);
 
                 if (longConditions.Count > 0 && longConditions.All(c => c.IsSatisfied))
                 {
@@ -98,28 +101,61 @@ public abstract class AbstractStrategy : IStrategy
         }
     }
 
-    protected abstract float GetStakeAmount();
-
-    protected AbstractStrategy AddShortCondition(Condition condition)
+    /// <summary>
+    ///   Add short <see cref="Condition"/>
+    /// </summary>
+    protected void InjectShortConditions(params Condition[] conditions)
     {
-        if (!shortConditions.Contains(condition))
+        foreach (var c in conditions)
         {
-            shortConditions.Add(condition);
+            if (c is not null && !shortConditions.Contains(c))
+            {
+                shortConditions.Add(c);
+            }
         }
-        return this;
     }
 
-    protected AbstractStrategy AddLongCondition(Condition condition)
+    /// <summary>
+    ///   Reset the internal state of the strategy <i> (nullables, cached values ...) </i>
+    /// </summary>
+    protected abstract void ResetState();
+
+    /// <summary>
+    ///   Return the indicators of the strategy, so that they can be automatically reset in <see cref="Reset"/>
+    /// </summary>
+    /// <returns> </returns>
+    protected abstract IEnumerable<Indicator> GetIndicators();
+
+    /// <summary>
+    ///   Add long <see cref="Condition"/>
+    /// </summary>
+    protected void InjectLongConditions(params Condition[] conditions)
     {
-        if (!longConditions.Contains(condition))
+        foreach (var c in conditions)
         {
-            longConditions.Add(condition);
+            if (c is not null && !longConditions.Contains(c))
+            {
+                longConditions.Add(c);
+            }
         }
-        return this;
     }
 
+    /// <summary>
+    ///   How much to invest in each trade
+    /// </summary>
+    /// <returns> </returns>
+    protected abstract float GetMargin(DataFrame frame);
+
+    /// <summary>
+    ///   Get the value for the stop loss for a given side order
+    /// </summary>
+    /// <returns> </returns>
     protected abstract float GetStopLoss(OrderSide side, DataFrame frame);
 
+    /// <summary>
+    ///   Get the value for the take profit for a given side order
+    /// </summary>
+    /// <returns> </returns>
     protected abstract float GetTakeProfit(OrderSide side, DataFrame frame);
 
     /// <summary>

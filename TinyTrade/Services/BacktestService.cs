@@ -46,12 +46,10 @@ internal class BacktestService
             while (provider.HasAnotherBatch(strategyIdentifier))
             {
                 watch.Restart();
-                strategy.OnStart();
                 while ((frame = await provider.Next(strategyIdentifier)) is not null)
                 {
                     await strategy.UpdateState(frame);
                 }
-                strategy.OnStop();
                 watch.Stop();
                 var result = new BacktestResultModel(
                                     exchange.ClosedPositions,
@@ -92,7 +90,6 @@ internal class BacktestService
 
             var watch = new Stopwatch();
             watch.Start();
-            strategy.OnStart();
             var spinner = ConsoleSpinner.Factory().Info("Evaluating ").Frames(12, "-   ", "--  ", "--- ", "----", " ---", "  --", "   -", "    ").Build();
 
             await spinner.Await(Task.Run(async () =>
@@ -103,7 +100,6 @@ internal class BacktestService
                     await strategy.UpdateState(frame);
                 }
             }));
-            strategy.OnStop();
             watch.Stop();
 
             return new BacktestResultModel(

@@ -53,7 +53,6 @@ internal class BaseRun
         try
         {
             await dataframeProvider.LoadAndPreloadCandles(preloadCandles, progress);
-            strategy.OnStart();
             DataFrame? frame;
             Logger?.LogTrace("Awaiting frames...");
             while ((frame = await dataframeProvider.Next()) is not null)
@@ -61,7 +60,6 @@ internal class BaseRun
                 await strategy.UpdateState(frame);
                 Heartbeat(frame);
             }
-            strategy.OnStop();
         }
         catch (Exception e)
         {

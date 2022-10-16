@@ -1,6 +1,6 @@
 namespace TinyTrade.Indicators;
 
-public class Rsi
+public class Rsi : Indicator
 {
     private readonly int period;
     private readonly Queue<float> firstCloses;
@@ -53,7 +53,7 @@ public class Rsi
         return res;
     }
 
-    public void Reset()
+    public override void Reset()
     {
         Last = null;
         firstCloses.Clear();

@@ -19,9 +19,10 @@ public class AtrStochRsiEmaStrategy : AbstractStrategy
     private readonly float stakePercentage;
     private readonly int intervalTolerance;
     private readonly ILogger? logger;
+    private readonly int lowStochRsi;
+    private readonly int highStochRsi;
     private float? lastStochK = null;
     private float? lastStochD = null;
-    private double? totalBalance = null;
 
     public AtrStochRsiEmaStrategy(StrategyConstructorParameters parameters) : base(parameters)
     {
@@ -29,47 +30,20 @@ public class AtrStochRsiEmaStrategy : AbstractStrategy
         riskRewardRatio = parameters.Traits.TraitValueOrDefault("riskRewardRatio", 1F);
         atrFactor = parameters.Traits.TraitValueOrDefault("atrFactor", 1F);
         stakePercentage = parameters.Traits.TraitValueOrDefault("stakePercentage", 0.1F);
-        intervalTolerance = parameters.Traits.TraitValueOrDefault("intervalTolerance", 1);
+        intervalTolerance = parameters.Traits.TraitValueOrDefault("intervalTolerance", 2);
         atr = new Atr();
         ema1 = new Ema(parameters.Traits.TraitValueOrDefault("ema1Period", 15));
         ema2 = new Ema(parameters.Traits.TraitValueOrDefault("ema2Period", 50));
         ema3 = new Ema(parameters.Traits.TraitValueOrDefault("ema3Period", 125));
+        lowStochRsi = parameters.Traits.TraitValueOrDefault("lowStochRsi", 30);
+        highStochRsi = parameters.Traits.TraitValueOrDefault("highStochRsi", 70);
         stochRsi = new StochRsi();
-
-        AddLongCondition(
-            new PerpetualCondition(f =>
-                ema1.Last is not null && ema2.Last is not null && ema3.Last is not null &&
-                ema3.Last < ema2.Last && ema2.Last < ema1.Last && ema1.Last < f.Close));
-        AddLongCondition(
-            new EventCondition(f =>
-            {
-                var stoch = stochRsi.Last;
-                return stoch is not (null, null) && lastStochK is not null && lastStochD is not null &&
-                lastStochK < lastStochD && stoch.Item1 > stoch.Item2 && stoch.Item2 < 30;
-            }, f =>
-            {
-                var stoch = stochRsi.Last;
-                return stoch.Item1 < stoch.Item2 || stoch.Item2 > 30;
-            }, intervalTolerance));
-
-        AddShortCondition(
-            new PerpetualCondition(f =>
-                ema1.Last is not null && ema2.Last is not null && ema3.Last is not null &&
-                ema3.Last > ema2.Last && ema2.Last > ema1.Last && ema1.Last > f.Close));
-        AddShortCondition(
-            new EventCondition(f =>
-            {
-                var stoch = stochRsi.Last;
-                return stoch is not (null, null) && lastStochK is not null && lastStochD is not null &&
-                lastStochK > lastStochD && stoch.Item1 < stoch.Item2 && stoch.Item2 > 70;
-            }, f =>
-            {
-                var stoch = stochRsi.Last;
-                return stoch.Item1 > stoch.Item2 || stoch.Item2 < 70;
-            }, intervalTolerance));
+        InjectConditions();
     }
 
-    protected override float GetStakeAmount() => totalBalance is null ? 0F : (float)(stakePercentage * totalBalance);
+    protected override IEnumerable<Indicator> GetIndicators() => new Indicator[] { atr, ema1, ema2, ema3, stochRsi };
+
+    protected override float GetMargin(DataFrame frame) => CachedTotalBalance is null ? 0F : (float)(stakePercentage * CachedTotalBalance);
 
     protected override float GetStopLoss(OrderSide side, DataFrame frame)
     {
@@ -93,7 +67,13 @@ public class AtrStochRsiEmaStrategy : AbstractStrategy
         };
     }
 
-    protected override async Task Tick(DataFrame frame)
+    protected override void ResetState()
+    {
+        lastStochK = null;
+        lastStochD = null;
+    }
+
+    protected override Task Tick(DataFrame frame)
     {
         atr.ComputeNext(frame.High, frame.Low, frame.Close);
         ema1.ComputeNext(frame.Close);
@@ -101,6 +81,39 @@ public class AtrStochRsiEmaStrategy : AbstractStrategy
         ema3.ComputeNext(frame.Close);
         (lastStochK, lastStochD) = stochRsi.Last;
         stochRsi.ComputeNext(frame.Close);
-        totalBalance = await Exchange.GetTotalBalanceAsync();
+        return Task.CompletedTask;
+    }
+
+    private void InjectConditions()
+    {
+        InjectLongConditions(
+            new PerpetualCondition(f =>
+                ema1.Last is not null && ema2.Last is not null && ema3.Last is not null &&
+                ema3.Last < ema2.Last && ema2.Last < ema1.Last && ema1.Last < f.Close),
+            new EventCondition(f =>
+            {
+                var stoch = stochRsi.Last;
+                return stoch is not (null, null) && lastStochK is not null && lastStochD is not null &&
+                lastStochK < lastStochD && stoch.Item1 > stoch.Item2 && stoch.Item2 < lowStochRsi;
+            }, f =>
+            {
+                var stoch = stochRsi.Last;
+                return stoch.Item1 < stoch.Item2 || stoch.Item2 > lowStochRsi;
+            }, intervalTolerance));
+
+        InjectShortConditions(
+            new PerpetualCondition(f =>
+                ema1.Last is not null && ema2.Last is not null && ema3.Last is not null &&
+                ema3.Last > ema2.Last && ema2.Last > ema1.Last && ema1.Last > f.Close),
+            new EventCondition(f =>
+            {
+                var stoch = stochRsi.Last;
+                return stoch is not (null, null) && lastStochK is not null && lastStochD is not null &&
+                lastStochK > lastStochD && stoch.Item1 < stoch.Item2 && stoch.Item2 > highStochRsi;
+            }, f =>
+            {
+                var stoch = stochRsi.Last;
+                return stoch.Item1 > stoch.Item2 || stoch.Item2 < highStochRsi;
+            }, intervalTolerance));
     }
 }

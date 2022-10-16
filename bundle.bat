@@ -1,7 +1,7 @@
 @echo off
 
 set arch=%1
-for /f "delims=" %%a in ('dir /b /ad %cd% ^|findstr /ive /c:\.Tests /c:\.git /c:\bin /c:\bundle /c:\.vs /c:\.github') do (
+for /f "delims=" %%a in ('dir /b /ad %cd% ^|findstr /ie /c:TinyTrade /c:TinyTrade.Live') do (
 	echo  ^
 
 Publishing: %%a

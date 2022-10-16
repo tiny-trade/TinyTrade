@@ -1,5 +1,4 @@
-﻿using Kucoin.Net.Enums;
-using TinyTrade.Core.Constructs;
+﻿using TinyTrade.Core.Constructs;
 
 namespace TinyTrade.Core.Statics;
 
@@ -23,51 +22,9 @@ public static class Extensions
         var g = genes.FirstOrDefault(g => g.Key.Equals(key));
         if (g is not null)
         {
-            T? res = (T?)Convert.ChangeType(g.Value, typeof(T));
-            if (res is null) return defaultVal;
+            T? res = (T)Convert.ChangeType(g.Value, typeof(T))!;
+            return res is null ? defaultVal : (T)res;
         }
         return defaultVal;
-    }
-
-    public static FuturesKlineInterval ToFuturesInterval(this KlineInterval interval)
-    {
-        switch (interval)
-        {
-            case KlineInterval.OneMinute:
-                return FuturesKlineInterval.OneMinute;
-
-            case KlineInterval.FiveMinutes:
-                return FuturesKlineInterval.FiveMinutes;
-
-            case KlineInterval.FifteenMinutes:
-                return FuturesKlineInterval.FifteenMinutes;
-
-            case KlineInterval.ThirtyMinutes:
-                return FuturesKlineInterval.ThirtyMinutes;
-
-            case KlineInterval.OneHour:
-                return FuturesKlineInterval.OneHour;
-
-            case KlineInterval.TwoHours:
-                return FuturesKlineInterval.TwoHours;
-
-            case KlineInterval.FourHours:
-                return FuturesKlineInterval.FourHours;
-
-            case KlineInterval.EightHours:
-                return FuturesKlineInterval.EightHours;
-
-            case KlineInterval.TwelveHours:
-                return FuturesKlineInterval.TwelveHours;
-
-            case KlineInterval.OneDay:
-                return FuturesKlineInterval.OneDay;
-
-            case KlineInterval.OneWeek:
-                return FuturesKlineInterval.OneWeek;
-
-            default:
-                return FuturesKlineInterval.FiveMinutes;
-        }
     }
 }

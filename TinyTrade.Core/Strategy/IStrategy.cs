@@ -6,9 +6,5 @@ public interface IStrategy
 {
     Task UpdateState(DataFrame frame);
 
-    void OnStart();
-
     void Reset();
-
-    void OnStop();
 }

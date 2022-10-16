@@ -61,7 +61,7 @@ internal class OptimizeService
             var population = new Population(96, 128, chromosome);
             var crossover = new UniformCrossover();// new VotingRecombinationCrossover(8, 4);
             var mutation = new UniformMutation(true);
-            var termination = new OrTermination(new FitnessStagnationTermination(24), new GenerationNumberTermination(128));// new GenerationNumberTermination(200);
+            var termination = new OrTermination(new FitnessStagnationTermination(32), new GenerationNumberTermination(128));// new GenerationNumberTermination(200);
             var taskExecutor = new ParallelTaskExecutor { MinThreads = 4, MaxThreads = 32 };
             ga = new GeneticAlgorithm(population, fitness, selection, crossover, mutation)
             {
