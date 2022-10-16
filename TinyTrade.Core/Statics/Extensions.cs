@@ -21,7 +21,12 @@ public static class Extensions
     public static T TraitValueOrDefault<T>(this List<Trait> genes, string key, T defaultVal) where T : notnull
     {
         var g = genes.FirstOrDefault(g => g.Key.Equals(key));
-        return g is not null ? (T)Convert.ChangeType(g.Value, typeof(T)) : defaultVal;
+        if (g is not null)
+        {
+            T? res = (T?)Convert.ChangeType(g.Value, typeof(T));
+            if (res is null) return defaultVal;
+        }
+        return defaultVal;
     }
 
     public static FuturesKlineInterval ToFuturesInterval(this KlineInterval interval)
