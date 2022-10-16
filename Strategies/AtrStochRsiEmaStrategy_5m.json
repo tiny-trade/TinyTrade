@@ -1,0 +1,73 @@
+{
+  "strategy": "AtrStochRsiEmaStrategy",
+  "timeframe": "5m",
+  "parameters": {
+    "maxConcurrentPositions": 1,
+    "leverage": 4
+  },
+  "traits": [
+    {
+      "min": 0.25,
+      "max": 5.0,
+      "type": "float",
+      "key": "riskRewardRatio",
+      "value": 1.07
+    },
+    {
+      "min": 0.25,
+      "max": 12.0,
+      "type": "float",
+      "key": "atrFactor",
+      "value": 12.0
+    },
+    {
+      "min": 0.02,
+      "max": 0.125,
+      "type": "float",
+      "key": "stakePercentage",
+      "value": 0.125
+    },
+    {
+      "min": 1.0,
+      "max": 4.0,
+      "type": "integer",
+      "key": "intervalTolerance",
+      "value": 3.0
+    },
+    {
+      "min": 5.0,
+      "max": 30.0,
+      "type": "integer",
+      "key": "ema1Period",
+      "value": 12.0
+    },
+    {
+      "min": 35.0,
+      "max": 80.0,
+      "type": "integer",
+      "key": "ema2Period",
+      "value": 35.0
+    },
+    {
+      "min": 85.0,
+      "max": 300.0,
+      "type": "integer",
+      "key": "ema3Period",
+      "value": 85.0
+    },
+    {
+      "min": 15.0,
+      "max": 35.0,
+      "type": "integer",
+      "key": "lowStochRsi",
+      "value": 17.0
+    },
+    {
+      "min": 65.0,
+      "max": 85.0,
+      "type": "integer",
+      "key": "highStochRsi",
+      "value": 83.0
+    }
+  ]
+}

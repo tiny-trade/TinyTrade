@@ -127,20 +127,6 @@ public abstract class AbstractStrategy : IStrategy
     protected abstract IEnumerable<Indicator> GetIndicators();
 
     /// <summary>
-    ///   Add long <see cref="Condition"/>
-    /// </summary>
-    protected void InjectLongConditions(params Condition[] conditions)
-    {
-        foreach (var c in conditions)
-        {
-            if (c is not null && !longConditions.Contains(c))
-            {
-                longConditions.Add(c);
-            }
-        }
-    }
-
-    /// <summary>
     ///   How much to invest in each trade
     /// </summary>
     /// <returns> </returns>
@@ -157,6 +143,20 @@ public abstract class AbstractStrategy : IStrategy
     /// </summary>
     /// <returns> </returns>
     protected abstract float GetTakeProfit(OrderSide side, DataFrame frame);
+
+    /// <summary>
+    ///   Add long <see cref="Condition"/>
+    /// </summary>
+    protected void InjectLongConditions(params Condition[] conditions)
+    {
+        foreach (var c in conditions)
+        {
+            if (c is not null && !longConditions.Contains(c))
+            {
+                longConditions.Add(c);
+            }
+        }
+    }
 
     /// <summary>
     ///   Called each time a closed candle is received

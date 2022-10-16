@@ -57,10 +57,10 @@ internal class StrategyFitnessEvaluator : IFitness
         double totalFitness = 0;
         foreach (var resultModel in resultModels)
         {
-            var a = 0.65F;
+            var a = 0.675F;
             var g = 4.75F;
             var d = 1.75F;
-            var c = 2.5F;
+            var c = 1.5F;
             var r = resultModel.FinalBalance / resultModel.InitialBalance;
             var wr = resultModel.WinRate;
             var r_penalize = 1F;
@@ -70,7 +70,7 @@ internal class StrategyFitnessEvaluator : IFitness
             var rFac = r_penalize * Math.Pow(r + 1, a);
             var wrFac = wr_penalize * Math.Pow(wr + 1, 1 - a);
             var feeFac = Math.Pow(resultModel.TotalFees + 1, c);
-            var res = rFac + wrFac - feeFac;
+            var res = (rFac + wrFac) / (resultModel.LiquidatedPositions + 1);
             totalFitness += 365 * (res / resultModel.Days);
         }
         return totalFitness;
