@@ -18,7 +18,7 @@ public class OfflineExchange : IExchange
 
     private double availableBalance;
 
-    public double OperationFee { get; set; }
+    public double OperationFee { get; set; } = 0.001D;
 
     public double TotalFees { get; private set; } = 0D;
 
@@ -31,7 +31,6 @@ public class OfflineExchange : IExchange
         openPositions = new Dictionary<Guid, OfflinePosition>();
         this.logger = logger;
         this.balance = balance;
-        OperationFee = 0.001D;
         availableBalance = balance;
         InitialBalance = balance;
         ClosedPositions = new List<OfflinePosition>();
@@ -109,5 +108,6 @@ public class OfflineExchange : IExchange
         var fee = margin * OperationFee;
         TotalFees += fee;
         balance -= fee;
+        availableBalance -= fee;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using TinyTrade.Core.Constructs;
+using TinyTrade.Core.Exchanges;
 using TinyTrade.Core.Exchanges.Offline;
 
 namespace TinyTrade.Core.Models;
@@ -34,6 +35,10 @@ public struct BacktestResultModel
 
     public int LiquidatedPositions { get; private set; }
 
+    public int ShortPositions { get; private set; }
+
+    public int LongPositions { get; private set; }
+
     public BacktestResultModel(List<OfflinePosition> positions, Timeframe timeframe, double initialBalance, double finalBalance, double totalFees, int candles, long elapsedMillis)
     {
         Frames = candles * timeframe.Minutes;
@@ -55,5 +60,7 @@ public struct BacktestResultModel
         EstimatedApy = (MathF.Pow((float)(FinalBalance / InitialBalance), 365F / Days) - 1F) * 100;
         EstimatedApy = EstimatedApy < -100 ? -100 : EstimatedApy;
         LiquidatedPositions = positions.Count(p => p.Liquidated);
+        LongPositions = positions.Count(p => p.Side == OrderSide.Buy);
+        ShortPositions = positions.Count - LongPositions;
     }
 }
