@@ -1,10 +1,13 @@
-﻿using Kucoin.Net.Enums;
-using TinyTrade.Core.Constructs;
+﻿using TinyTrade.Core.Constructs;
 
 namespace TinyTrade.Core.Statics;
 
 public static class Extensions
 {
+    /// <summary>
+    ///   Download a file with an <see cref="HttpClient"/>
+    /// </summary>
+    /// <returns> </returns>
     public static async Task<bool> DownloadFile(this HttpClient client, string address, string fileName)
     {
         using var response = await client.GetAsync(address);
@@ -18,51 +21,18 @@ public static class Extensions
         return false;
     }
 
+    /// <summary>
+    ///   Attempt to retrieve the value corresponding to the provided key. Return the default value on error
+    /// </summary>
+    /// <returns> </returns>
     public static T TraitValueOrDefault<T>(this List<Trait> genes, string key, T defaultVal) where T : notnull
     {
         var g = genes.FirstOrDefault(g => g.Key.Equals(key));
-        return g is not null ? (T)Convert.ChangeType(g.Value, typeof(T)) : defaultVal;
-    }
-
-    public static FuturesKlineInterval ToFuturesInterval(this KlineInterval interval)
-    {
-        switch (interval)
+        if (g is not null)
         {
-            case KlineInterval.OneMinute:
-                return FuturesKlineInterval.OneMinute;
-
-            case KlineInterval.FiveMinutes:
-                return FuturesKlineInterval.FiveMinutes;
-
-            case KlineInterval.FifteenMinutes:
-                return FuturesKlineInterval.FifteenMinutes;
-
-            case KlineInterval.ThirtyMinutes:
-                return FuturesKlineInterval.ThirtyMinutes;
-
-            case KlineInterval.OneHour:
-                return FuturesKlineInterval.OneHour;
-
-            case KlineInterval.TwoHours:
-                return FuturesKlineInterval.TwoHours;
-
-            case KlineInterval.FourHours:
-                return FuturesKlineInterval.FourHours;
-
-            case KlineInterval.EightHours:
-                return FuturesKlineInterval.EightHours;
-
-            case KlineInterval.TwelveHours:
-                return FuturesKlineInterval.TwelveHours;
-
-            case KlineInterval.OneDay:
-                return FuturesKlineInterval.OneDay;
-
-            case KlineInterval.OneWeek:
-                return FuturesKlineInterval.OneWeek;
-
-            default:
-                return FuturesKlineInterval.FiveMinutes;
+            T? res = (T)Convert.ChangeType(g.Value, typeof(T))!;
+            return res is null ? defaultVal : (T)res;
         }
+        return defaultVal;
     }
 }

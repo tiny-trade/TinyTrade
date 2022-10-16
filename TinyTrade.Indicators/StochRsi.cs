@@ -1,6 +1,6 @@
 ﻿namespace TinyTrade.Indicators;
 
-public class StochRsi
+public class StochRsi : Indicator
 {
     private readonly Rsi rsi;
     private readonly Stoch stoch;
@@ -15,7 +15,7 @@ public class StochRsi
         dMa = new Ma(slowdPeriod);
     }
 
-    public void Reset()
+    public override void Reset()
     {
         Last = (null, null);
         rsi.Reset();

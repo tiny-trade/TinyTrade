@@ -1,6 +1,6 @@
 ﻿namespace TinyTrade.Indicators;
 
-public class BollingerBands
+public class BollingerBands : Indicator
 {
     private readonly int stdev;
     private readonly int period;
@@ -39,7 +39,7 @@ public class BollingerBands
         return (currentMa, bU, bD);
     }
 
-    public void Reset()
+    public override void Reset()
     {
         Last = (null, null, null);
         firstValues.Clear();

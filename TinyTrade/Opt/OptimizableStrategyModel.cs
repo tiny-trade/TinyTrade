@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using TinyTrade.Core.Constructs;
+﻿using TinyTrade.Core.Constructs;
 using TinyTrade.Core.Models;
 
 namespace TinyTrade.Opt;
@@ -11,24 +10,20 @@ namespace TinyTrade.Opt;
 [Serializable]
 internal class OptimizableStrategyModel
 {
-    [JsonProperty("strategy")]
-    public string Name { get; init; } = null!;
+    public string Strategy { get; init; } = null!;
 
-    [JsonProperty("timeframe")]
     public string Timeframe { get; init; } = null!;
 
-    [JsonProperty("parameters")]
     public Dictionary<string, object> Parameters { get; init; } = new Dictionary<string, object>();
 
-    [JsonProperty("traits")]
-    public List<StrategyGene> Genes { get; init; } = new List<StrategyGene>();
+    public List<StrategyGene> Traits { get; init; } = new List<StrategyGene>();
 
     public static implicit operator StrategyModel(OptimizableStrategyModel optModel)
         => new StrategyModel()
         {
-            Name = optModel.Name,
+            Strategy = optModel.Strategy,
             Parameters = optModel.Parameters,
             Timeframe = optModel.Timeframe,
-            Traits = optModel.Genes.ConvertAll(g => g as Trait)
+            Traits = optModel.Traits.ConvertAll(g => g as Trait)
         };
 }

@@ -1,14 +1,10 @@
-﻿using Newtonsoft.Json;
-
-namespace TinyTrade.Core.Constructs;
+﻿namespace TinyTrade.Core.Constructs;
 
 [Serializable]
 public struct Pair
 {
-    [JsonProperty("asset")]
     public string Asset { get; private set; }
 
-    [JsonProperty("collateral")]
     public string Collateral { get; private set; }
 
     public Pair(string asset, string collateral)

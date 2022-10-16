@@ -10,6 +10,7 @@
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <SignAssembly>False</SignAssembly>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <Configurations>Debug;Release;Base</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

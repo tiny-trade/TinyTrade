@@ -1,11 +1,10 @@
 ﻿// args passed: "mode" "strategy file" "pair"
 
 using HandierCli.Log;
-using Newtonsoft.Json;
 using TinyTrade.Core.Constructs;
-using TinyTrade.Core.Exchanges;
 using TinyTrade.Core.Models;
 using TinyTrade.Core.Shared;
+using TinyTrade.Core.Statics;
 using TinyTrade.Live.Modes;
 using TinyTrade.Strategies.Link;
 
@@ -35,7 +34,7 @@ if (!File.Exists(strategyFile))
 {
     Environment.Exit(1);
 }
-var strategyModel = JsonConvert.DeserializeObject<StrategyModel>(File.ReadAllText(strategyFile));
+var strategyModel = SerializationHandler.Deserialize<StrategyModel>(File.ReadAllText(strategyFile));
 if (strategyModel is null)
 {
     Environment.Exit(1);

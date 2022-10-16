@@ -1,6 +1,6 @@
 ﻿namespace TinyTrade.Indicators;
 
-public class Atr
+public class Atr : Indicator
 {
     private readonly int period;
     private readonly Queue<float> queue;
@@ -19,7 +19,7 @@ public class Atr
         count = 0;
     }
 
-    public void Reset()
+    public override void Reset()
     {
         atr = 0;
         prevClose = 0;

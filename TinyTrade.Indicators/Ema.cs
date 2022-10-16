@@ -1,6 +1,6 @@
 ﻿namespace TinyTrade.Indicators;
 
-public class Ema
+public class Ema : Indicator
 {
     private readonly int period;
     private readonly int smoothing;
@@ -34,7 +34,7 @@ public class Ema
         }
     }
 
-    public void Reset()
+    public override void Reset()
     {
         Last = null;
         previousValue = 0;

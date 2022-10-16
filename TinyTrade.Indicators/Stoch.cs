@@ -1,6 +1,6 @@
 ﻿namespace TinyTrade.Indicators;
 
-public class Stoch
+public class Stoch : Indicator
 {
     private readonly int fastkPeriod;
     private readonly Queue<float> lowQ;
@@ -19,7 +19,7 @@ public class Stoch
         slowDMa = new Ma(slowdPeriod);
     }
 
-    public void Reset()
+    public override void Reset()
     {
         Last = (null, null);
         lowQ.Clear();

@@ -1,6 +1,5 @@
 ﻿using HandierCli.Progress;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System.Diagnostics;
 using TinyTrade.Core.Constructs;
 using TinyTrade.Core.DataProviders;
@@ -36,28 +35,30 @@ internal class BacktestService
             var exchange = new OfflineExchange(100, logger);
             var cParams = new StrategyConstructorParameters()
             { Exchange = exchange, Logger = logger, Parameters = strategyModel.Parameters, Traits = strategyModel.Traits };
-            if (!StrategyResolver.TryResolveStrategy(strategyModel.Name, cParams, out var strategy)) return null;
+            if (!StrategyResolver.TryResolveStrategy(strategyModel.Strategy, cParams, out var strategy)) return null;
 
             exchange.Reset();
             provider.Reset(strategyIdentifier);
 
             var results = new List<BacktestResultModel>();
             DataFrame? frame;
+            var watch = new Stopwatch();
             while (provider.HasAnotherBatch(strategyIdentifier))
             {
-                strategy.OnStart();
-
+                watch.Restart();
                 while ((frame = await provider.Next(strategyIdentifier)) is not null)
                 {
                     await strategy.UpdateState(frame);
                 }
-                strategy.OnStop();
+                watch.Stop();
                 var result = new BacktestResultModel(
                                     exchange.ClosedPositions,
                                     provider.Timeframe,
                                     exchange.InitialBalance,
                                     exchange.GetTotalBalance(),
-                                    provider.FramesCount);
+                                    exchange.TotalFees,
+                                    provider.FramesCount,
+                                    watch.ElapsedMilliseconds);
                 strategy.Reset();
                 results.Add(result);
             }
@@ -85,11 +86,10 @@ internal class BacktestService
 
             var cParams = new StrategyConstructorParameters()
             { Exchange = exchange, Logger = logger, Parameters = strategyModel.Parameters, Traits = strategyModel.Traits };
-            if (!StrategyResolver.TryResolveStrategy(strategyModel.Name, cParams, out var strategy)) return null;
+            if (!StrategyResolver.TryResolveStrategy(strategyModel.Strategy, cParams, out var strategy)) return null;
 
             var watch = new Stopwatch();
             watch.Start();
-            strategy.OnStart();
             var spinner = ConsoleSpinner.Factory().Info("Evaluating ").Frames(12, "-   ", "--  ", "--- ", "----", " ---", "  --", "   -", "    ").Build();
 
             await spinner.Await(Task.Run(async () =>
@@ -100,19 +100,16 @@ internal class BacktestService
                     await strategy.UpdateState(frame);
                 }
             }));
-            strategy.OnStop();
             watch.Stop();
 
-            var millis = watch.ElapsedMilliseconds;
-            var result = new BacktestResultModel(
+            return new BacktestResultModel(
                     exchange.ClosedPositions,
                     provider.Timeframe,
                     exchange.InitialBalance,
                     exchange.GetTotalBalance(),
-                    provider.FramesCount);
-            logger.LogTrace("Processed {c} klines in just {ms}ms O.O - Hail to the C#!", provider.FramesCount, millis);
-            logger.LogInformation("Evaluation result:\n{r}", JsonConvert.SerializeObject(result, Formatting.Indented));
-            return result;
+                    exchange.TotalFees,
+                    provider.FramesCount,
+                    watch.ElapsedMilliseconds);
         }
         catch (Exception e)
         {

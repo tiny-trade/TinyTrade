@@ -1,6 +1,6 @@
 ﻿namespace TinyTrade.Indicators;
 
-public class Macd
+public class Macd : Indicator
 {
     private readonly Ema emaFast;
     private readonly Ema emaSlow;
@@ -15,7 +15,7 @@ public class Macd
         emaSignal = new Ema(signal);
     }
 
-    public void Reset()
+    public override void Reset()
     {
         Last = (null, null, null);
         emaFast.Reset();

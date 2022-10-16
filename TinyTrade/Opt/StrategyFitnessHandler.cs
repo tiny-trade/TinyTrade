@@ -38,11 +38,11 @@ internal class StrategyFitnessEvaluator : IFitness
     {
         if (chromosome is not IdFloatingPointChromosome strategyChromosome) return 0;
         var floats = strategyChromosome.ToFloatingPoints();
-        if (floats.Length != templateModel.Genes.Count) return 0;
-        var zip = templateModel.Genes.Zip(floats).ToList();
+        if (floats.Length != templateModel.Traits.Count) return 0;
+        var zip = templateModel.Traits.Zip(floats).ToList();
         var evaluationModel = new StrategyModel()
         {
-            Name = templateModel.Name,
+            Strategy = templateModel.Strategy,
             Parameters = templateModel.Parameters,
             Timeframe = templateModel.Timeframe,
             Traits = zip.ConvertAll(z => new Trait(z.First.Key, (float)z.Second))
@@ -57,18 +57,20 @@ internal class StrategyFitnessEvaluator : IFitness
         double totalFitness = 0;
         foreach (var resultModel in resultModels)
         {
-            var a = 0.7F;
-            var g = 4.5F;
+            var a = 0.675F;
+            var g = 4.75F;
             var d = 1.75F;
+            var c = 1.5F;
             var r = resultModel.FinalBalance / resultModel.InitialBalance;
             var wr = resultModel.WinRate;
             var r_penalize = 1F;
             var wr_penalize = 1F;
             if (r < 1) r_penalize = (float)Math.Pow(r, g);
             if (wr < 0.5F) wr_penalize = (float)Math.Pow(wr + 0.5F, d);
-            var fac2 = r_penalize * Math.Pow(r + 1, a);
-            var fac3 = wr_penalize * Math.Pow(wr + 1, 1 - a);
-            var res = fac2 + fac3;
+            var rFac = r_penalize * Math.Pow(r + 1, a);
+            var wrFac = wr_penalize * Math.Pow(wr + 1, 1 - a);
+            var feeFac = Math.Pow(resultModel.TotalFees + 1, c);
+            var res = (rFac + wrFac) / (resultModel.LiquidatedPositions + 1);
             totalFitness += 365 * (res / resultModel.Days);
         }
         return totalFitness;

@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <BaseOutputPath>$(SolutionDir)bin\</BaseOutputPath>
+    <Configurations>Debug;Release;Base</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

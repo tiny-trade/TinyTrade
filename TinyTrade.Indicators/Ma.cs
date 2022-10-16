@@ -1,6 +1,6 @@
 ﻿namespace TinyTrade.Indicators;
 
-public class Ma
+public class Ma : Indicator
 {
     private readonly int period;
     private readonly Queue<float> firstValues;
@@ -26,7 +26,7 @@ public class Ma
         return res;
     }
 
-    public void Reset()
+    public override void Reset()
     {
         Last = null;
         firstValues.Clear();
