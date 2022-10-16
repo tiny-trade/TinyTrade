@@ -36,27 +36,37 @@ public class AtrStochRsiEmaStrategy : AbstractStrategy
         ema3 = new Ema(parameters.Traits.TraitValueOrDefault("ema3Period", 125));
         stochRsi = new StochRsi();
 
-        AddLongCondition(new PerpetualCondition(f =>
-            ema1.Last is not null && ema2.Last is not null && ema3.Last is not null && stochRsi.Last is not (null, null) &&
-            stochRsi.Last.Item1 < 30 && stochRsi.Last.Item1 > stochRsi.Last.Item2 &&
-            ema3.Last < ema2.Last && ema2.Last < ema1.Last && ema1.Last < f.Close));
-        AddLongCondition(new EventCondition(f =>
-        {
-            var stoch = stochRsi.Last;
-            return stoch is not (null, null) && lastStochK is not null && lastStochD is not null &&
-            lastStochK < lastStochD && stoch.Item1 > stoch.Item2 && stoch.Item2 < 30;
-        }, intervalTolerance));
+        AddLongCondition(
+            new PerpetualCondition(f =>
+                ema1.Last is not null && ema2.Last is not null && ema3.Last is not null &&
+                ema3.Last < ema2.Last && ema2.Last < ema1.Last && ema1.Last < f.Close));
+        AddLongCondition(
+            new EventCondition(f =>
+            {
+                var stoch = stochRsi.Last;
+                return stoch is not (null, null) && lastStochK is not null && lastStochD is not null &&
+                lastStochK < lastStochD && stoch.Item1 > stoch.Item2 && stoch.Item2 < 30;
+            }, f =>
+            {
+                var stoch = stochRsi.Last;
+                return stoch.Item1 < stoch.Item2 || stoch.Item2 > 30;
+            }, intervalTolerance));
 
-        AddShortCondition(new PerpetualCondition(f =>
-            ema1.Last is not null && ema2.Last is not null && ema3.Last is not null && stochRsi.Last is not (null, null) &&
-            stochRsi.Last.Item1 > 70 && stochRsi.Last.Item1 < stochRsi.Last.Item2 &&
-            ema3.Last > ema2.Last && ema2.Last > ema1.Last && ema1.Last > f.Close));
-        AddShortCondition(new EventCondition(f =>
-        {
-            var stoch = stochRsi.Last;
-            return stoch is not (null, null) && lastStochK is not null && lastStochD is not null &&
-            lastStochK > lastStochD && stoch.Item1 < stoch.Item2 && stoch.Item2 > 70;
-        }, intervalTolerance));
+        AddShortCondition(
+            new PerpetualCondition(f =>
+                ema1.Last is not null && ema2.Last is not null && ema3.Last is not null &&
+                ema3.Last > ema2.Last && ema2.Last > ema1.Last && ema1.Last > f.Close));
+        AddShortCondition(
+            new EventCondition(f =>
+            {
+                var stoch = stochRsi.Last;
+                return stoch is not (null, null) && lastStochK is not null && lastStochD is not null &&
+                lastStochK > lastStochD && stoch.Item1 < stoch.Item2 && stoch.Item2 > 70;
+            }, f =>
+            {
+                var stoch = stochRsi.Last;
+                return stoch.Item1 > stoch.Item2 || stoch.Item2 < 70;
+            }, intervalTolerance));
     }
 
     protected override float GetStakeAmount() => totalBalance is null ? 0F : (float)(stakePercentage * totalBalance);

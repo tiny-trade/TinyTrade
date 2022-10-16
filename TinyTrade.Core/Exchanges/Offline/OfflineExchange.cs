@@ -11,10 +11,14 @@ namespace TinyTrade.Core.Exchanges.Offline;
 public class OfflineExchange : IExchange
 {
     private readonly ILogger? logger;
+
     private readonly Dictionary<Guid, OfflinePosition> openPositions;
-    private readonly double operationFee;
+
     private double balance;
+
     private double availableBalance;
+
+    public double OperationFee { get; set; }
 
     public double TotalFees { get; private set; } = 0D;
 
@@ -22,12 +26,12 @@ public class OfflineExchange : IExchange
 
     public List<OfflinePosition> ClosedPositions { get; private set; }
 
-    public OfflineExchange(float balance = 100, double operationFee = 0.001D, ILogger? logger = null)
+    public OfflineExchange(float balance = 100, ILogger? logger = null)
     {
         openPositions = new Dictionary<Guid, OfflinePosition>();
         this.logger = logger;
         this.balance = balance;
-        this.operationFee = operationFee;
+        OperationFee = 0.001D;
         availableBalance = balance;
         InitialBalance = balance;
         ClosedPositions = new List<OfflinePosition>();
@@ -102,7 +106,7 @@ public class OfflineExchange : IExchange
 
     private void PayFee(float margin)
     {
-        var fee = margin * operationFee;
+        var fee = margin * OperationFee;
         TotalFees += fee;
         balance -= fee;
     }

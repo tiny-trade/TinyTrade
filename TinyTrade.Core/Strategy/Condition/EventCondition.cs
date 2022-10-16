@@ -5,12 +5,14 @@ namespace TinyTrade.Core.Strategy;
 public class EventCondition : Condition
 {
     private readonly Predicate<DataFrame> callback;
+    private readonly Predicate<DataFrame>? resetCondition;
     private readonly int tolerance;
     private int currentTolerance;
 
-    public EventCondition(Predicate<DataFrame> callback, int tolerance = 1)
+    public EventCondition(Predicate<DataFrame> callback, Predicate<DataFrame>? resetCondition = null, int tolerance = 1)
     {
         this.callback = callback;
+        this.resetCondition = resetCondition;
         this.tolerance = tolerance;
         currentTolerance = 0;
     }
@@ -34,6 +36,10 @@ public class EventCondition : Condition
         if (IsSatisfied)
         {
             currentTolerance++;
+            if (resetCondition is not null && resetCondition(frame))
+            {
+                Reset();
+            }
         }
     }
 
