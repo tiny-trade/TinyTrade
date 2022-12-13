@@ -4,7 +4,6 @@ using System.Diagnostics;
 using TinyTrade.Core.Constructs;
 using TinyTrade.Core.DataProviders;
 using TinyTrade.Core.Exchanges;
-using TinyTrade.Core.Exchanges.Offline;
 using TinyTrade.Core.Models;
 using TinyTrade.Core.Statics;
 using TinyTrade.Core.Strategy;
@@ -32,7 +31,7 @@ internal class BacktestService
     {
         try
         {
-            var exchange = new OfflineExchange(100, logger);
+            var exchange = ExchangeFactory.GetLocalTestExchange(100, logger);
             var cParams = new StrategyConstructorParameters()
             { Exchange = exchange, Logger = logger, Parameters = strategyModel.Parameters, Traits = strategyModel.Traits };
             if (!StrategyResolver.TryResolveStrategy(strategyModel.Strategy, cParams, out var strategy)) return null;
@@ -41,11 +40,11 @@ internal class BacktestService
             provider.Reset(strategyIdentifier);
 
             var results = new List<BacktestResultModel>();
-            DataFrame? frame;
             var watch = new Stopwatch();
             while (provider.HasAnotherBatch(strategyIdentifier))
             {
                 watch.Restart();
+                DataFrame? frame;
                 while ((frame = await provider.Next(strategyIdentifier)) is not null)
                 {
                     await strategy.UpdateState(frame);
@@ -54,6 +53,7 @@ internal class BacktestService
                 var result = new BacktestResultModel(
                                     exchange.ClosedPositions,
                                     provider.Timeframe,
+                                    exchange.WithdrawedBalance,
                                     exchange.InitialBalance,
                                     exchange.GetTotalBalance(),
                                     exchange.TotalFees,
@@ -105,6 +105,7 @@ internal class BacktestService
             return new BacktestResultModel(
                     exchange.ClosedPositions,
                     provider.Timeframe,
+                    exchange.WithdrawedBalance,
                     exchange.InitialBalance,
                     exchange.GetTotalBalance(),
                     exchange.TotalFees,

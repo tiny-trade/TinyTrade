@@ -1,6 +1,5 @@
-﻿// args passed: "mode" "strategy file" "pair"
-
-using HandierCli.Log;
+﻿using HandierCli.Log;
+using System.Diagnostics;
 using TinyTrade.Core.Constructs;
 using TinyTrade.Core.Models;
 using TinyTrade.Core.Shared;
@@ -20,6 +19,11 @@ var res = handler.Fits();
 if (!res.Successful)
 {
     // Possibility to print the errors using res: FitResult, since process is in background, no need for now
+    Console.WriteLine(res.Reason);
+    foreach (var fail in res.FailedFits)
+    {
+        Console.WriteLine($"wrong value {fail.Item2} for argument {fail.Item1}");
+    }
     Environment.Exit(1);
 }
 
@@ -41,6 +45,7 @@ if (strategyModel is null)
 }
 try
 {
+    Process.GetCurrentProcess().Exited += OnProcessExit;
     var exchange = Enum.Parse<Exchange>(exchangeStr, true);
     var runMode = Enum.Parse<RunMode>(mode, true);
     var run = new BaseRun(runMode, exchange, Pair.Parse(pair), Timeframe.FromFlag(strategyModel.Timeframe), strategyModel, logger);
@@ -51,4 +56,8 @@ catch (Exception e)
 {
     Console.WriteLine(e);
     Console.ReadLine();
+}
+
+void OnProcessExit(object? sender, EventArgs e)
+{
 }

@@ -84,6 +84,9 @@ public class KucoinDataframeProvider : IExchangeDataframeProvider
         return true;
     }
 
+    public void Reset(Guid? identifier = null)
+    { }
+
     private static KlineInterval IntervalConverter(Timeframe timeframe)
     {
         var k = (KlineInterval)(timeframe.Minutes * 60);

@@ -21,4 +21,9 @@ public static class ArgumentsHandlerFactory
                 .Mandatory("strategy file", @".json$")
                 .Mandatory("interval pattern", @"20[1-2][0-9]-[0-1][0-9]|20[1-2][0-9]-[0-1][0-9]")
                 .Mandatory("pair symbol", @"[A-Z]+-USDT$");
+
+    public static ArgumentsHandler.Builder ForSend() => ArgumentsHandler.Factory()
+                .Mandatory("process id", @"[0-9]+")
+                .Mandatory("command keyword", new string[] { "withdraw" })
+                .Mandatory("arguments as single string (enclosed in quotes if multiple)");
 }

@@ -19,6 +19,8 @@ public interface IExchange
     /// <returns> </returns>
     async Task<double> GetAvailableBalanceAsync() => await Task.Run(() => GetAvailableBalance());
 
+    async Task WithdrawFromTradingBalanceAsync(double amount) => await Task.Run(() => WithdrawFromTradingBalance(amount));
+
     /// <summary>
     ///   Async version of <see cref="GetTotalBalance"/>
     /// </summary>
@@ -42,6 +44,8 @@ public interface IExchange
     /// </summary>
     /// <returns> The total balance of the collateral </returns>
     double GetTotalBalance();
+
+    void WithdrawFromTradingBalance(double amount);
 
     /// <summary>
     ///   Open a position, can be blocking

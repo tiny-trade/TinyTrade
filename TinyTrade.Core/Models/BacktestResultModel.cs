@@ -27,6 +27,8 @@ public struct BacktestResultModel
 
     public double EstimatedApy { get; private set; }
 
+    public double Withdrawn { get; private set; }
+
     public int ClosedPositions { get; private set; }
 
     public double ProfitPercentage { get; private set; }
@@ -39,13 +41,14 @@ public struct BacktestResultModel
 
     public int LongPositions { get; private set; }
 
-    public BacktestResultModel(List<OfflinePosition> positions, Timeframe timeframe, double initialBalance, double finalBalance, double totalFees, int candles, long elapsedMillis)
+    public BacktestResultModel(List<OfflinePosition> positions, Timeframe timeframe, double withdrawn, double initialBalance, double finalBalance, double totalFees, int candles, long elapsedMillis)
     {
         Frames = candles * timeframe.Minutes;
         Candles = candles;
         ElapsedMillis = elapsedMillis;
         Timeframe = timeframe;
         TotalFees = totalFees;
+        Withdrawn = withdrawn;
         Days = candles / 1440;
         InitialBalance = initialBalance;
         FinalBalance = finalBalance;

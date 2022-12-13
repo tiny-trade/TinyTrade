@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.3.32922.545
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyTrade", "TinyTrade\TinyTrade.csproj", "{DE914AA3-3E8A-434B-94A6-D80C0716EF02}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E48C4642-AB76-4BCF-9BA6-B2EA1E5F980F} = {E48C4642-AB76-4BCF-9BA6-B2EA1E5F980F}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyTrade.Core", "TinyTrade.Core\TinyTrade.Core.csproj", "{E04380BE-64BC-4D81-923C-B35401DD02FF}"
 EndProject

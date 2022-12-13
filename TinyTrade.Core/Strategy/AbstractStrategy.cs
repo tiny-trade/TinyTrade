@@ -11,8 +11,13 @@ public abstract class AbstractStrategy : IStrategy
 
     private readonly List<Condition> longConditions;
     private IEnumerable<Indicator>? indicators = null;
+    private double? thresholdBalance;
 
     public int MaxConcurrentPositions { get; init; }
+
+    public double WithdrawThreshold { get; init; } = 0D;
+
+    public double WithdrawRatio { get; init; } = 0D;
 
     protected ILogger? Logger { get; private set; }
 
@@ -63,6 +68,13 @@ public abstract class AbstractStrategy : IStrategy
         if (frame.IsClosed)
         {
             CachedTotalBalance = await Exchange.GetTotalBalanceAsync();
+            thresholdBalance ??= CachedTotalBalance;
+            if (ShouldWithdrawFromTradingAccount())
+            {
+                var amount = thresholdBalance * WithdrawRatio;
+                await Exchange.WithdrawFromTradingBalanceAsync((double)amount);
+                thresholdBalance = CachedTotalBalance * (WithdrawThreshold + 1);
+            }
             await Tick(frame);
             foreach (var c in shortConditions)
             {
@@ -163,4 +175,10 @@ public abstract class AbstractStrategy : IStrategy
     /// </summary>
     /// <param name="frame"> </param>
     protected virtual Task Tick(DataFrame frame) => Task.CompletedTask;
+
+    private bool ShouldWithdrawFromTradingAccount() =>
+        WithdrawThreshold > 0 &&
+        WithdrawRatio > 0 &&
+        WithdrawThreshold >= WithdrawRatio &&
+        CachedTotalBalance / thresholdBalance >= WithdrawThreshold + 1;
 }

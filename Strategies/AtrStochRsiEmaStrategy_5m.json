@@ -7,6 +7,20 @@
   },
   "traits": [
     {
+      "min": 0,
+      "max": 0.1,
+      "type": "float",
+      "key": "withdrawThreshold",
+      "value": 0.02
+    },
+    {
+      "min": 0,
+      "max": 0.1,
+      "type": "float",
+      "key": "withdrawRatio",
+      "value": 0.01
+    },
+    {
       "min": 0.25,
       "max": 5.0,
       "type": "float",

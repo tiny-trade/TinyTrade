@@ -48,6 +48,11 @@ internal class CommandLineHostedService : IHostedService
             {
                 var service = services.GetRequiredService<BacktestService>();
                 var strategyFile = handler.GetPositional(0);
+                if (!File.Exists(strategyFile))
+                {
+                    logger.LogError("Strategy file does not exists");
+                    return;
+                }
                 var intervalPattern = handler.GetPositional(1);
                 var pair = handler.GetPositional(2);
                 var strategyModel = SerializationHandler.Deserialize<OptimizableStrategyModel>(File.ReadAllText(strategyFile));
@@ -83,12 +88,23 @@ internal class CommandLineHostedService : IHostedService
                 await service.RunLive(runMode, exchange, strategyFile, pair);
             }));
 
+        cli.Register(Command.Factory("send")
+            .Description("send a command to a running process")
+            .WithArguments(ArgumentsHandlerFactory.ForSend())
+            .AddAsync(async handler =>
+            {
+                if (!int.TryParse(handler.GetPositional(0), out var pid)) return;
+                var message = handler.GetPositional(1) + " " + handler.GetPositional(2);
+                logger.LogDebug("Sending command {cmd} to process {pid}", message, pid);
+                var service = services.GetRequiredService<IpcService>();
+                await service.SendAsync(pid, message);
+            }));
+
         cli.Register(Command.Factory("snap")
             .Description("look for active foretest simulations or live sessions currently running")
             .WithArguments(ArgumentsHandlerFactory.ForSnap())
             .Add(handler =>
             {
-                logger.LogDebug("Simulating snapping");
                 var service = services.GetRequiredService<SnapService>();
                 service.Snapshot();
             }));

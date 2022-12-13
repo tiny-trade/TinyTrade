@@ -22,6 +22,8 @@ public class OfflineExchange : IExchange
 
     public double TotalFees { get; private set; } = 0D;
 
+    public double WithdrawedBalance { get; private set; } = 0D;
+
     public float InitialBalance { get; private set; }
 
     public List<OfflinePosition> ClosedPositions { get; private set; }
@@ -41,6 +43,20 @@ public class OfflineExchange : IExchange
         balance = InitialBalance;
         availableBalance = InitialBalance;
         openPositions.Clear();
+    }
+
+    async Task IExchange.WithdrawFromTradingBalanceAsync(double amount)
+    {
+        await Task.CompletedTask;
+        WithdrawFromTradingBalance(amount);
+    }
+
+    public void WithdrawFromTradingBalance(double amount)
+    {
+        if (amount > availableBalance) return;
+        availableBalance -= amount;
+        balance -= amount;
+        WithdrawedBalance += amount;
     }
 
     public void OpenPosition(OrderSide side, float openPrice, float stopLoss, float takeProfit, float margin, int leverage)

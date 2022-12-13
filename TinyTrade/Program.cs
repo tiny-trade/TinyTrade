@@ -26,6 +26,7 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton(provider => cli);
         services.AddTransient<BacktestService>();
         services.AddTransient<OptimizeService>();
+        services.AddSingleton<IpcService>();
         services.AddSingleton<RunService>();
         services.AddSingleton<SnapService>();
     })
@@ -41,6 +42,7 @@ var logger = loggerProvider.CreateLogger(string.Empty);
 
 // DO NOT REMOVE THIS, necessary for preventing Visual Studio from stripping assemblies that are used solely through reflection
 TinyTradeStrategiesAssembly.DummyLink();
+
 logger.LogDebug("Strategies assembly linked");
 
 await host.RunAsync();

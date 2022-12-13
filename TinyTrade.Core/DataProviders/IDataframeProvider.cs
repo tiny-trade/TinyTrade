@@ -4,6 +4,8 @@ namespace TinyTrade.Core.DataProviders;
 
 public interface IDataframeProvider
 {
+    void Reset(Guid? identifier = null);
+
     /// <summary>
     ///   Initialize the provider
     /// </summary>

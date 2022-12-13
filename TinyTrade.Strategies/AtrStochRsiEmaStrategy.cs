@@ -24,8 +24,12 @@ public class AtrStochRsiEmaStrategy : AbstractStrategy
     private float? lastStochK = null;
     private float? lastStochD = null;
 
-    public AtrStochRsiEmaStrategy(StrategyConstructorParameters parameters) : base(parameters)
+    public AtrStochRsiEmaStrategy(StrategyConstructorParameters parameters) :
+        base(parameters)
     {
+        WithdrawThreshold = parameters.Traits.TraitValueOrDefault("withdrawThreshold", 0F);
+        WithdrawRatio = parameters.Traits.TraitValueOrDefault("withdrawRatio", 0F);
+
         logger = parameters.Logger;
         riskRewardRatio = parameters.Traits.TraitValueOrDefault("riskRewardRatio", 1F);
         atrFactor = parameters.Traits.TraitValueOrDefault("atrFactor", 1F);

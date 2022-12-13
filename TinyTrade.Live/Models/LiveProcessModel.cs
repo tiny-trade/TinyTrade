@@ -16,10 +16,13 @@ internal class LiveProcessModel
 
     public float Balance { get; init; }
 
+    public float Withdrawn { get; init; }
+
     public int OpenPositions { get; init; }
 
-    public LiveProcessModel(int pid, RunMode mode, Exchange exchange, string strategy, string pair, float balance, int openPosition)
+    public LiveProcessModel(int pid, RunMode mode, string strategy, string pair, float withdrawn, float balance, int openPosition)
     {
+        Withdrawn = withdrawn;
         Pid = pid;
         Mode = mode;
         Strategy = strategy;
