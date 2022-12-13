@@ -1,5 +1,8 @@
 ﻿namespace TinyTrade.Core.Constructs;
 
+/// <summary>
+/// Class encapsulating the creation and management of a time interval
+/// </summary>
 public class TimeInterval
 {
     private int fromYear;

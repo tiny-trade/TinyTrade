@@ -10,6 +10,9 @@ using TinyTrade.Core.Strategy;
 
 namespace TinyTrade.Services;
 
+/// <summary>
+/// Service handling backtesting
+/// </summary>
 internal class BacktestService
 {
     private readonly ILogger logger;
@@ -77,7 +80,7 @@ internal class BacktestService
         var bar = ConsoleProgressBar.Factory().Lenght(50).Build();
         try
         {
-            float initialBalance = 100;
+            float initialBalance = 1000;
             var exchange = ExchangeFactory.GetLocalTestExchange(initialBalance, logger);
             var provider = DataframeProviderFactory.GetBacktestDataframeProvider(interval, pair, Timeframe.FromFlag(strategyModel.Timeframe));
             var progress = new Progress<IDataframeProvider.LoadProgress>(p => bar.Report(p.Progress, p.Description));

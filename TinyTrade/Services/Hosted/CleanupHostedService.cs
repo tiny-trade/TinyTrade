@@ -7,6 +7,9 @@ using TinyTrade.Statics;
 
 namespace TinyTrade.Services.Hosted;
 
+/// <summary>
+/// Service to automatically clean up orphan data
+/// </summary>
 internal class CleanupHostedService : IHostedService
 {
     private readonly ILogger logger;

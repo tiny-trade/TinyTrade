@@ -14,6 +14,9 @@ using TinyTrade.Statics;
 
 namespace TinyTrade.Live.Modes;
 
+/// <summary>
+/// Base run instance of the Live process
+/// </summary>
 internal class BaseRun
 {
     private readonly IExchangeDataframeProvider dataframeProvider;
@@ -54,12 +57,12 @@ internal class BaseRun
     {
         ipcHandler = new IpcHandler(GetPipeCommands());
         ipcHandler.Open();
-        var progress = new Progress<IDataframeProvider.LoadProgress>(p => Logger?.LogDebug("{p}", p.Description));
+        var progress = new Progress<IDataframeProvider.LoadProgress>(p => Logger?.LogInformation("{p}", p.Description));
         try
         {
             await dataframeProvider.LoadAndPreloadCandles(preloadCandles, progress);
             DataFrame? frame;
-            Logger?.LogTrace("Awaiting frames...");
+            Logger?.LogInformation("Awaiting frames...");
             while ((frame = await dataframeProvider.Next()) is not null)
             {
                 await strategy.UpdateState(frame);
@@ -68,7 +71,7 @@ internal class BaseRun
         }
         catch (Exception e)
         {
-            Logger?.LogError("Exception captured: {e}", e);
+            Logger?.LogInformation("Exception captured: {e}", e);
         }
         finally { ipcHandler.Close(); }
     }
@@ -78,7 +81,7 @@ internal class BaseRun
     /// </summary>
     protected virtual async void Heartbeat(DataFrame frame)
     {
-        if (/*frame.IsClosed == */true)
+        if (frame.IsClosed)
         {
             var withdrawn = ExchangeInterface is OfflineExchange offlineExchange ? offlineExchange.WithdrawedBalance : 0;
             var model = new LiveProcessModel(
@@ -94,7 +97,7 @@ internal class BaseRun
             var serialized = SerializationHandler.Serialize(model);
             var path = Path.Join(Paths.Processes, model.Pid.ToString() + ".json");
             File.WriteAllText(path, serialized);
-            Console.WriteLine($"Serialized model {serialized}");
+            Logger?.LogInformation("Closetime: {ct} > serialized model {s}", frame.CloseTime, serialized);
         }
     }
 

@@ -2,6 +2,9 @@
 
 namespace TinyTrade.Core.Models;
 
+/// <summary>
+/// Model representing a strategy
+/// </summary>
 [Serializable]
 public class StrategyModel
 {

@@ -2,11 +2,11 @@
 
 namespace TinyTrade.Core.Strategy;
 
-public abstract class Condition
+public abstract class AbstractCondition
 {
     public bool IsSatisfied { get; protected set; }
 
-    protected Condition()
+    protected AbstractCondition()
     {
     }
 

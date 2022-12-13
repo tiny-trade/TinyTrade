@@ -4,6 +4,13 @@ namespace TinyTrade.Core.Statics;
 
 public static class StrategyResolver
 {
+    /// <summary>
+    /// Automatically resolve a strategy by its class name and obtain the instance, if possible
+    /// </summary>
+    /// <param name="strategyName"></param>
+    /// <param name="parameters"></param>
+    /// <param name="strategy"></param>
+    /// <returns></returns>
     public static bool TryResolveStrategy(string strategyName, StrategyConstructorParameters parameters, out IStrategy strategy)
     {
         strategy = null!;

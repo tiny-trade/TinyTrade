@@ -4,7 +4,10 @@ using TinyTrade.Core.Exchanges;
 
 namespace TinyTrade.Core.Strategy;
 
-public struct StrategyConstructorParameters
+/// <summary>
+/// Struct encapsulating, for comodity, all the parameters required to instantiate an <see cref="AbstractStrategy"/>
+/// </summary>
+public readonly struct StrategyConstructorParameters
 {
     public Dictionary<string, object> Parameters { get; init; }
 

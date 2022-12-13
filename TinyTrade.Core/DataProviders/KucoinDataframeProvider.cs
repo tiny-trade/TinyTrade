@@ -9,6 +9,9 @@ using static TinyTrade.Core.DataProviders.IDataframeProvider;
 
 namespace TinyTrade.Core.DataProviders;
 
+/// <summary>
+/// Data provider gathering data from Kucoin exchange
+/// </summary>
 public class KucoinDataframeProvider : IExchangeDataframeProvider
 {
     private readonly KucoinSocketClient socketClient;

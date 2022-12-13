@@ -4,6 +4,9 @@ using System.Text.RegularExpressions;
 
 namespace TinyTrade.Services;
 
+/// <summary>
+/// Service to perform a snapshot of the system, searching for Live processes
+/// </summary>
 internal class SnapService
 {
     private const string LiveAssemblyName = "TinyTrade.Live";
@@ -17,6 +20,9 @@ internal class SnapService
         liveAssemblyRegex = new Regex(LiveAssemblyName);
     }
 
+    /// <summary>
+    /// Print Live instances of the bot currently running
+    /// </summary>
     public void Snapshot()
     {
         try

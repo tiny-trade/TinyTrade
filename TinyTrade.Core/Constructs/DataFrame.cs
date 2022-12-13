@@ -2,6 +2,9 @@
 
 namespace TinyTrade.Core.Constructs;
 
+/// <summary>
+/// Base model for defining a Kline
+/// </summary>
 public class DataFrame
 {
     public float Open { get; init; }

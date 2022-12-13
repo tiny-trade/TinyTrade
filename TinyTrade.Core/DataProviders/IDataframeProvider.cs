@@ -7,7 +7,7 @@ public interface IDataframeProvider
     void Reset(Guid? identifier = null);
 
     /// <summary>
-    ///   Initialize the provider
+    ///   Initialize the provider and perform the loading step
     /// </summary>
     /// <returns> </returns>
     Task Load(IProgress<LoadProgress>? progress = null);

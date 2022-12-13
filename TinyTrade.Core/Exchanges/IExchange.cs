@@ -5,6 +5,9 @@ namespace TinyTrade.Core.Exchanges;
 public enum OrderSide
 { Buy, Sell }
 
+/// <summary>
+/// Interface defining basic methods of an exchange
+/// </summary>
 public interface IExchange
 {
     /// <summary>
@@ -45,6 +48,10 @@ public interface IExchange
     /// <returns> The total balance of the collateral </returns>
     double GetTotalBalance();
 
+    /// <summary>
+    /// Withdraw the selected amount, if possible, from the trading account, preventing future positions to trade with it
+    /// </summary>
+    /// <param name="amount"></param>
     void WithdrawFromTradingBalance(double amount);
 
     /// <summary>

@@ -8,6 +8,9 @@ using TinyTrade.Statics;
 
 namespace TinyTrade.Services;
 
+/// <summary>
+/// Service to run genetic optimization of strategies
+/// </summary>
 internal class OptimizeService
 {
     private readonly ILogger logger;
@@ -24,6 +27,13 @@ internal class OptimizeService
         this.backtestService = backtestService;
     }
 
+    /// <summary>
+    /// Run an optimization for the specified strategy
+    /// </summary>
+    /// <param name="pair"></param>
+    /// <param name="interval"></param>
+    /// <param name="strategyModel"></param>
+    /// <returns></returns>
     public async Task Optimize(Pair pair, TimeInterval interval, OptimizableStrategyModel strategyModel)
     {
         try

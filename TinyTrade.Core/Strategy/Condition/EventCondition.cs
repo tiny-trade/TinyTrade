@@ -2,7 +2,10 @@
 
 namespace TinyTrade.Core.Strategy;
 
-public class EventCondition : Condition
+/// <summary>
+/// Condition used to detect a specific event that remains true for the specified number of klines: <see cref="tolerance"/>
+/// </summary>
+public class EventCondition : AbstractCondition
 {
     private readonly Predicate<DataFrame> callback;
     private readonly Predicate<DataFrame>? resetCondition;

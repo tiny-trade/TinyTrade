@@ -3,6 +3,9 @@ using System.IO.Pipes;
 
 namespace TinyTrade.Live.Communication;
 
+/// <summary>
+/// Inter process communication handler
+/// </summary>
 internal class IpcHandler
 {
     private readonly IEnumerable<Command> pipeCommands;
@@ -14,10 +17,7 @@ internal class IpcHandler
         pipeCommands = commands;
     }
 
-    public void Close()
-    {
-        closed = true;
-    }
+    public void Close() => closed = true;
 
     public void Open()
     {

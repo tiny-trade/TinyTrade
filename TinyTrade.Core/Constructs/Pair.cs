@@ -1,5 +1,8 @@
 ﻿namespace TinyTrade.Core.Constructs;
 
+/// <summary>
+/// Struct encapsulating the creation and management of pair strings
+/// </summary>
 [Serializable]
 public struct Pair
 {

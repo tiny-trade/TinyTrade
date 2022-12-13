@@ -1,5 +1,8 @@
 ﻿namespace TinyTrade.Core.Exchanges.Offline;
 
+/// <summary>
+/// Model identifying a position taken in a offline environment (position on exchanges are not kept locally)
+/// </summary>
 [Serializable]
 public class OfflinePosition
 {

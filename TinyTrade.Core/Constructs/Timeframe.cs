@@ -1,7 +1,9 @@
 ﻿namespace TinyTrade.Core.Constructs;
-
+/// <summary>
+/// Struct encapsulating the creation and management of timeframe strings
+/// </summary>
 [Serializable]
-public struct Timeframe
+public readonly struct Timeframe
 {
     public string Flag { get; init; }
 

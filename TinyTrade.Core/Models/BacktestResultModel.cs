@@ -4,6 +4,9 @@ using TinyTrade.Core.Exchanges.Offline;
 
 namespace TinyTrade.Core.Models;
 
+/// <summary>
+/// Model representing a result of a backtest
+/// </summary>
 [Serializable]
 public struct BacktestResultModel
 {

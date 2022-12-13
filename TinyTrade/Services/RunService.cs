@@ -5,6 +5,9 @@ using TinyTrade.Core.Shared;
 
 namespace TinyTrade.Services;
 
+/// <summary>
+/// Service to run Live instances 
+/// </summary>
 internal class RunService
 {
     private const string LiveExecutable = "TinyTrade.Live";
@@ -15,6 +18,14 @@ internal class RunService
         logger = loggerProvider.CreateLogger(string.Empty);
     }
 
+    /// <summary>
+    /// Launch a Live instance of the bot
+    /// </summary>
+    /// <param name="mode"></param>
+    /// <param name="exchange"></param>
+    /// <param name="strategyFile"></param>
+    /// <param name="pair"></param>
+    /// <returns></returns>
     public async Task RunLive(RunMode mode, Exchange exchange, string strategyFile, string pair)
     {
         await Task.CompletedTask;

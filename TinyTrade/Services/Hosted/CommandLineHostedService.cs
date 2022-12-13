@@ -12,6 +12,9 @@ using TinyTrade.Opt;
 
 namespace TinyTrade.Services.Hosted;
 
+/// <summary>
+/// Main CLI service handling commands and the <see cref="CommandLine"/>
+/// </summary>
 internal class CommandLineHostedService : IHostedService
 {
     private readonly ILogger logger;

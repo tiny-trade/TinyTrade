@@ -39,6 +39,7 @@ public class BacktestDataframeProvider : IDataframeProvider
         httpClient = new HttpClient();
     }
 
+
     public virtual async Task Load(IProgress<IDataframeProvider.LoadProgress>? progress = null)
     {
         IDataframeProvider.LoadProgress prog = new IDataframeProvider.LoadProgress

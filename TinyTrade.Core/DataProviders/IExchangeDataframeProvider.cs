@@ -1,5 +1,8 @@
 ﻿namespace TinyTrade.Core.DataProviders;
 
+/// <summary>
+/// An <see cref="IDataframeProvider"/> gathering data from a specific exchange
+/// </summary>
 public interface IExchangeDataframeProvider : IDataframeProvider
 {
     /// <summary>

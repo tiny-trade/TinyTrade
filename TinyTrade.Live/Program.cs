@@ -1,4 +1,5 @@
 ﻿using HandierCli.Log;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using TinyTrade.Core.Constructs;
 using TinyTrade.Core.Models;
@@ -19,10 +20,10 @@ var res = handler.Fits();
 if (!res.Successful)
 {
     // Possibility to print the errors using res: FitResult, since process is in background, no need for now
-    Console.WriteLine(res.Reason);
+    logger.LogInformation("{r}", res.Reason);
     foreach (var fail in res.FailedFits)
     {
-        Console.WriteLine($"wrong value {fail.Item2} for argument {fail.Item1}");
+        logger.LogInformation("wrong value {1} for argument {2}", fail.Item2, fail.Item1);
     }
     Environment.Exit(1);
 }
@@ -54,8 +55,7 @@ try
 }
 catch (Exception e)
 {
-    Console.WriteLine(e);
-    Console.ReadLine();
+    logger.LogInformation("{ex}", e);
 }
 
 void OnProcessExit(object? sender, EventArgs e)

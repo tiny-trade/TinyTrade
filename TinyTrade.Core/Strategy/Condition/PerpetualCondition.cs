@@ -2,7 +2,10 @@
 
 namespace TinyTrade.Core.Strategy;
 
-public class PerpetualCondition : Condition
+/// <summary>
+/// A condition that is perpetually true until the <see cref="callback"/> is true
+/// </summary>
+public class PerpetualCondition : AbstractCondition
 {
     private readonly Predicate<DataFrame> callback;
 

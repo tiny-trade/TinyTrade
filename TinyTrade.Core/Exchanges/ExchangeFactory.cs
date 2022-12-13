@@ -4,6 +4,7 @@ using TinyTrade.Core.Shared;
 
 namespace TinyTrade.Core.Exchanges;
 
+
 public static class ExchangeFactory
 {
     /// <summary>
