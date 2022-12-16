@@ -27,9 +27,6 @@ public class AtrStochRsiEmaStrategy : AbstractStrategy
     public AtrStochRsiEmaStrategy(StrategyConstructorParameters parameters) :
         base(parameters)
     {
-        WithdrawThreshold = Convert.ToDouble(parameters.Parameters.GetValueOrDefault("withdrawThreshold", 0F));
-        WithdrawRatio = Convert.ToDouble(parameters.Parameters.GetValueOrDefault("withdrawRatio", 0F));
-
         logger = parameters.Logger;
         riskRewardRatio = parameters.Traits.TraitValueOrDefault("riskRewardRatio", 1F);
         atrFactor = parameters.Traits.TraitValueOrDefault("atrFactor", 1F);

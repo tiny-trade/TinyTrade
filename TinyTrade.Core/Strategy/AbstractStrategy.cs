@@ -6,9 +6,9 @@ using TinyTrade.Indicators;
 namespace TinyTrade.Core.Strategy;
 
 /// <summary>
-/// Base class defining the behaviour of a strategy. 
-/// All implemented strategy are encouraged to inherit from this class and to not implement directly the interface <see cref="IStrategy"/>, 
-/// unless extremely necessary, for example in order to define completely different strategy logic
+///   Base class defining the behaviour of a strategy. All implemented strategy are encouraged to inherit from this class and to not
+///   implement directly the interface <see cref="IStrategy"/>, unless extremely necessary, for example in order to define completely
+///   different strategy logic
 /// </summary>
 public abstract class AbstractStrategy : IStrategy
 {
@@ -19,44 +19,50 @@ public abstract class AbstractStrategy : IStrategy
     private double? thresholdBalance;
 
     /// <summary>
-    /// Maximum number of concurrently opened positions
+    ///   Maximum number of concurrently opened positions
     /// </summary>
     public int MaxConcurrentPositions { get; init; }
 
     /// <summary>
-    /// Select a threshold defined in decimal ratio after which the strategy will perform a withdraw from a the trading account calling <see cref="IExchange.WithdrawFromTradingBalance(double)"/>
-    /// <para>
-    /// Example: <see cref="WithdrawThreshold"/> = 0.02 > after having gained 2%, the withdrawal request of an amount defined by <see cref="WithdrawRatio"/> will be performed
-    /// </para>
+    ///   Select a threshold defined in decimal ratio after which the strategy will perform a withdraw from a the trading account calling
+    ///   <see cref="IExchange.WithdrawFromTradingBalance(double)"/>
+    ///   <para>
+    ///     Example: <see cref="WithdrawThreshold"/> = 0.02 &gt; after having gained 2%, the withdrawal request of an amount defined by <see
+    ///              cref="WithdrawRatio"/> will be performed
+    ///   </para>
     /// </summary>
     public double WithdrawThreshold { get; init; } = 0D;
 
     /// <summary>
-    /// Select a decimal ratio to withdraw after having reached a relative gain of <see cref="WithdrawThreshold"/>
-    /// <para>
-    /// Example, <see cref="WithdrawRatio"/> = 0.05, <see cref="WithdrawThreshold"/> = 0.02, initial balance = 1000
-    /// </para>
-    /// <para>
-    /// <list type="bullet">
-    /// <item><description>After having reached a balance of <b>1050</b>, withdraw (secure) <b>20</b></description></item>
-    /// <item><description>Next withdrawal will be now triggered only once reached <b>1102.5 = 1050 * <see cref="WithdrawThreshold"/></b> 
-    /// and will be of <b>22.05 = 1050 * <see cref="WithdrawRatio"/></b></description></item>
-    /// </list>
-    /// </para>
+    ///   Select a decimal ratio to withdraw after having reached a relative gain of <see cref="WithdrawThreshold"/>
+    ///   <para> Example, <see cref="WithdrawRatio"/> = 0.05, <see cref="WithdrawThreshold"/> = 0.02, initial balance = 1000 </para>
+    ///   <para>
+    ///     <list type="bullet">
+    ///       <item>
+    ///         <description> After having reached a balance of <b> 1050 </b>, withdraw (secure) <b> 20 </b> </description>
+    ///       </item>
+    ///       <item>
+    ///         <description>
+    ///           Next withdrawal will be now triggered only once reached <b> 1102.5 = 1050 * <see cref="WithdrawThreshold"/></b> and will
+    ///           be of <b> 22.05 = 1050 * <see cref="WithdrawRatio"/></b>
+    ///         </description>
+    ///       </item>
+    ///     </list>
+    ///   </para>
     /// </summary>
     public double WithdrawRatio { get; init; } = 0D;
 
     protected ILogger? Logger { get; private set; }
 
     /// <summary>
-    /// Current total balance, nullable since it is initialized lazily the first time it is required in <see cref="UpdateState(DataFrame)"/>
+    ///   Current total balance, nullable since it is initialized lazily the first time it is required in <see cref="UpdateState(DataFrame)"/>
     /// </summary>
     protected double? CachedTotalBalance { get; private set; }
 
     protected IExchange Exchange { get; private set; }
 
     /// <summary>
-    /// Used leverage
+    ///   Used leverage
     /// </summary>
     protected int Leverage { get; private set; }
 
@@ -64,6 +70,8 @@ public abstract class AbstractStrategy : IStrategy
     {
         Logger = parameters.Logger;
         Exchange = parameters.Exchange;
+        WithdrawThreshold = Convert.ToDouble(parameters.Parameters.GetValueOrDefault("withdrawThreshold", 0F));
+        WithdrawRatio = Convert.ToDouble(parameters.Parameters.GetValueOrDefault("withdrawRatio", 0F));
         MaxConcurrentPositions = Convert.ToInt32(parameters.Parameters.GetValueOrDefault("maxConcurrentPositions", 1));
         Leverage = Convert.ToInt32(parameters.Parameters.GetValueOrDefault("leverage", 1));
         shortConditions = new List<AbstractCondition>();
