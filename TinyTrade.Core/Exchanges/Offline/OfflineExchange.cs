@@ -24,6 +24,8 @@ public class OfflineExchange : IExchange
 
     public double WithdrawedBalance { get; private set; } = 0D;
 
+    public Dictionary<Guid, OfflinePosition> OpenPositions => new Dictionary<Guid, OfflinePosition>(openPositions);
+
     public float InitialBalance { get; private set; }
 
     public List<OfflinePosition> ClosedPositions { get; private set; }

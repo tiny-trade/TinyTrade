@@ -15,7 +15,7 @@ using TinyTrade.Statics;
 namespace TinyTrade.Live.Modes;
 
 /// <summary>
-/// Base run instance of the Live process
+///   Base run instance of the Live process
 /// </summary>
 internal class BaseRun
 {
@@ -83,7 +83,16 @@ internal class BaseRun
     {
         if (frame.IsClosed)
         {
-            var withdrawn = ExchangeInterface is OfflineExchange offlineExchange ? offlineExchange.WithdrawedBalance : 0;
+            Directory.CreateDirectory(Paths.Processes);
+            double withdrawn = 0;
+            if (ExchangeInterface is OfflineExchange offlineExchange)
+            {
+                withdrawn = offlineExchange.WithdrawedBalance;
+                var positionSerialize = SerializationHandler.Serialize(offlineExchange.OpenPositions);
+                var positionsPath = Path.Join(Paths.Processes, Environment.ProcessId.ToString() + "_postions.json");
+                File.WriteAllText(positionsPath, positionSerialize);
+            }
+
             var model = new LiveProcessModel(
                 Environment.ProcessId,
                 mode,
@@ -93,7 +102,6 @@ internal class BaseRun
                 (float)await ExchangeInterface.GetTotalBalanceAsync(),
                 await ExchangeInterface.GetOpenPositionsNumberAsync());
 
-            Directory.CreateDirectory(Paths.Processes);
             var serialized = SerializationHandler.Serialize(model);
             var path = Path.Join(Paths.Processes, model.Pid.ToString() + ".json");
             File.WriteAllText(path, serialized);

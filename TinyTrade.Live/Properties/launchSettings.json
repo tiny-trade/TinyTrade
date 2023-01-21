@@ -2,7 +2,7 @@
   "profiles": {
     "TinyTrade.Live": {
       "commandName": "Project",
-      "commandLineArgs": "foretest \"C:\\Users\\bltmt\\Desktop\\TinyTrade\\simple.json\" BNB-USDT kucoin"
+      "commandLineArgs": "foretest \"C:\\Users\\matteo\\Documents\\Progetti\\TinyTrade\\simple.json\" BNB-USDT kucoin"
     }
   }
 }

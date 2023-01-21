@@ -114,7 +114,7 @@ public abstract class AbstractStrategy : IStrategy
             {
                 var amount = thresholdBalance * WithdrawRatio;
                 await Exchange.WithdrawFromTradingBalanceAsync((double)amount);
-                thresholdBalance = CachedTotalBalance * (WithdrawThreshold + 1);
+                thresholdBalance *= WithdrawThreshold + 1;
             }
             await Tick(frame);
             foreach (var c in shortConditions)
