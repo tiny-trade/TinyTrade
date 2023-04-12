@@ -9,11 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GeneticSharp" Version="3.1.2" />
-    <PackageReference Include="HandierCli" Version="1.2.2" />
-    <PackageReference Include="Kucoin.Net" Version="4.0.17" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="GeneticSharp" Version="3.1.4" />
+    <PackageReference Include="HandierCli" Version="1.2.3" />
+    <PackageReference Include="Kucoin.Net" Version="4.3.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>

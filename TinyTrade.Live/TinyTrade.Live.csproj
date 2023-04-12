@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="HandierCli" Version="1.2.2" />
+    <PackageReference Include="HandierCli" Version="1.2.3" />
   </ItemGroup>
 
   <ItemGroup>
