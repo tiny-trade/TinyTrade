@@ -18,7 +18,6 @@
 
 ### Status   
 
-![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/TinyTrade/TinyTrade/.NET/main?label=Build&logo=github)
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/TinyTrade/TinyTrade/main?label=Last%20commit&color=brightgreen&logo=github)
 
 | Issues    | Pull requests    |
