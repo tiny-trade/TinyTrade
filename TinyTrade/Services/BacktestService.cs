@@ -11,7 +11,7 @@ using TinyTrade.Core.Strategy;
 namespace TinyTrade.Services;
 
 /// <summary>
-/// Service handling backtesting
+///   Service handling backtesting
 /// </summary>
 internal class BacktestService
 {
@@ -77,13 +77,16 @@ internal class BacktestService
 
     public async Task<BacktestResultModel?> RunBacktest(Pair pair, TimeInterval interval, StrategyModel strategyModel)
     {
-        var bar = ConsoleProgressBar.Factory().Lenght(50).Build();
+        var bar = ConsoleProgressBar.Factory().Lenght(50).StartOnBuild().Build();
         try
         {
             float initialBalance = 1000;
             var exchange = ExchangeFactory.GetLocalTestExchange(initialBalance, logger);
             var provider = DataframeProviderFactory.GetBacktestDataframeProvider(interval, pair, Timeframe.FromFlag(strategyModel.Timeframe));
-            var progress = new Progress<IDataframeProvider.LoadProgress>(p => bar.Report(p.Progress, p.Description));
+            var progress = new Progress<IDataframeProvider.LoadProgress>(p =>
+            {
+                bar.Report(p.Progress, p.Description);
+            });
             await provider.Load(progress);
             bar.Dispose();
 

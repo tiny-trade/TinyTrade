@@ -15,7 +15,7 @@ namespace TinyTrade.Core.DataProviders;
 public class KucoinDataframeProvider : IExchangeDataframeProvider
 {
     private readonly KucoinSocketClient socketClient;
-    private readonly KucoinClient client;
+    private readonly KucoinSocketClient client;
     private readonly Pair pair;
     private readonly KlineInterval klineInterval;
     private readonly Queue<DataFrame> dataFrames;
@@ -28,12 +28,12 @@ public class KucoinDataframeProvider : IExchangeDataframeProvider
         this.timeframe = timeframe;
         klineInterval = IntervalConverter(timeframe);
         socketClient = new KucoinSocketClient();
-        client = new KucoinClient();
+        client = new KucoinSocketClient();
         dataFrames = new Queue<DataFrame>();
         oldCandle = null;
     }
 
-    public async Task Load(IProgress<LoadProgress>? progress = null) => _ = await socketClient.SpotStreams.SubscribeToKlineUpdatesAsync(pair.ForKucoin(), klineInterval, Callback);
+    public async Task Load(IProgress<LoadProgress>? progress = null) => _ = await socketClient.SpotApi.SubscribeToKlineUpdatesAsync(pair.ForKucoin(), klineInterval, Callback);
 
     public async Task<DataFrame?> Next(Guid? identifier = null)
     {
@@ -49,6 +49,7 @@ public class KucoinDataframeProvider : IExchangeDataframeProvider
         if (amount <= 0) return true;
         var ratio = (double)amount / 200;
         var tasksNumber = (int)Math.Ceiling(ratio);
+        var restClient = new KucoinRestClient();
         var tasks = new Task<WebCallResult<IEnumerable<KucoinKline>>>[tasksNumber];
         var now = new DateTimeOffset(DateTime.Now.ToUniversalTime());
         var to = now;
@@ -56,7 +57,7 @@ public class KucoinDataframeProvider : IExchangeDataframeProvider
         {
             var add = (int)(Math.Min(ratio, 1) * 200F);
             var from = to.AddSeconds(-(timeframe.Minutes * 60) * add);
-            tasks[i] = client.SpotApi.ExchangeData.GetKlinesAsync(pair.ForKucoin(), klineInterval, startTime: from.DateTime, endTime: to.DateTime);
+            tasks[i] = restClient.SpotApi.ExchangeData.GetKlinesAsync(pair.ForKucoin(), klineInterval, startTime: from.DateTime, endTime: to.DateTime);
             ratio -= 1;
             to = from;
             if (ratio <= 0) break;

@@ -28,7 +28,7 @@ internal class StrategyFitnessEvaluator : IFitness
 
     public async Task Load()
     {
-        var bar = ConsoleProgressBar.Factory().Lenght(50).Build();
+        var bar = ConsoleProgressBar.Factory().Lenght(50).StartOnBuild().Build();
         var progress = new Progress<IDataframeProvider.LoadProgress>(p => bar.Report(p.Progress, p.Description));
         await provider.Load(progress);
         bar.Dispose();

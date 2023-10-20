@@ -52,6 +52,7 @@ public class BacktestDataframeProvider : IDataframeProvider
             progress?.Report(prog);
         });
         progress?.Report(prog);
+
         await DownloadAndExtractData(valueProgress);
         prog.Description = "Building dataframes";
         frames = await BuildDataFrames(valueProgress);
